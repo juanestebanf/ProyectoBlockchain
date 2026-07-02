@@ -178,6 +178,38 @@ class SolicitudModel {
 
     }
 
+    async cancelarSolicitudesRestantes(inmuebleId, solicitudAceptadaId) {
+
+        const query = `
+
+            UPDATE solicitudes
+
+            SET
+
+                estado='CANCELADA',
+
+                observacion='Solicitud cancelada automáticamente porque el inmueble ya fue asignado.',
+
+                fecha_respuesta=NOW()
+
+            WHERE inmueble_id=$1
+
+            AND id<>$2
+
+            AND estado='PENDIENTE';
+
+        `;
+
+        await db.query(query, [
+
+            inmuebleId,
+
+            solicitudAceptadaId
+
+        ]);
+
+    }
+
 }
 
 module.exports = new SolicitudModel();
