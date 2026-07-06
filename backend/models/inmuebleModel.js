@@ -171,23 +171,58 @@ class InmuebleModel {
 
     async actualizarEstado(id, estado) {
 
+            const query = `
+
+                UPDATE inmuebles
+
+                SET
+
+                    estado=$1,
+
+                    fecha_actualizacion=NOW()
+
+                WHERE id=$2
+
+                RETURNING *;
+
+            `;
+
+            const { rows } = await db.query(query, [estado, id]);
+
+            return rows[0];
+
+        }
+        // Alias para legibilidad en el Service
+        async cambiarEstado(id, estado) {
+
+        return await this.actualizarEstado(id, estado);
+
+    }
+    async actualizarDisponibilidad(id, estadoDisponibilidad) {
+
         const query = `
 
             UPDATE inmuebles
 
             SET
 
-                estado=$1,
+                estado_disponibilidad = $1,
 
-                fecha_actualizacion=NOW()
+                fecha_actualizacion = NOW()
 
-            WHERE id=$2
+            WHERE id = $2
 
             RETURNING *;
 
         `;
 
-        const { rows } = await db.query(query, [estado, id]);
+        const { rows } = await db.query(query, [
+
+            estadoDisponibilidad,
+
+            id
+
+        ]);
 
         return rows[0];
 

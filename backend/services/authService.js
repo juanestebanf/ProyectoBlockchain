@@ -7,16 +7,20 @@ class AuthService {
 
     async registrar(datos) {
 
-        const { nombre, correo, password, rol } = datos;
+        let { nombre, correo, password, rol } = datos;
+
+        // Normalizar el rol
+        rol = rol.toUpperCase();
 
         const usuarioExiste = await usuarioModel.buscarPorCorreo(correo);
 
         if (usuarioExiste) {
 
             throw new AppError(
-                "Correo ya registrado",
+                "Correo ya registrado.",
                 400
             );
+
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -65,6 +69,7 @@ class AuthService {
                 "Correo o contraseña incorrectos.",
                 401
             );
+
         }
 
         const coincide = await bcrypt.compare(
@@ -77,7 +82,10 @@ class AuthService {
 
         if (!coincide) {
 
-            throw new Error("Correo o contraseña incorrectos.");
+            throw new AppError(
+                "Correo o contraseña incorrectos.",
+                401
+            );
 
         }
 

@@ -178,37 +178,72 @@ class SolicitudModel {
 
     }
 
-    async cancelarSolicitudesRestantes(inmuebleId, solicitudAceptadaId) {
+    async buscarCompletaPorId(id) {
 
         const query = `
 
-            UPDATE solicitudes
+            SELECT
 
-            SET
+                s.*,
 
-                estado='CANCELADA',
+                i.propietario_id,
 
-                observacion='Solicitud cancelada automáticamente porque el inmueble ya fue asignado.',
+                i.precio,
 
-                fecha_respuesta=NOW()
+                i.tipo_operacion,
 
-            WHERE inmueble_id=$1
+                i.estado AS estado_inmueble,
+                
+                i.estado_disponibilidad,
 
-            AND id<>$2
+                i.titulo
 
-            AND estado='PENDIENTE';
+            FROM solicitudes s
+
+            INNER JOIN inmuebles i
+
+                ON i.id = s.inmueble_id
+
+            WHERE s.id = $1;
 
         `;
 
-        await db.query(query, [
+        const { rows } = await db.query(query, [id]);
 
-            inmuebleId,
-
-            solicitudAceptadaId
-
-        ]);
+        return rows[0];
 
     }
+    async rechazarPendientesPorInmueble(inmuebleId, solicitudAceptadaId) {
+
+    const query = `
+
+        UPDATE solicitudes
+
+        SET
+
+            estado = 'RECHAZADA',
+
+            observacion = 'El inmueble ya no se encuentra disponible.',
+
+            fecha_respuesta = NOW()
+
+        WHERE inmueble_id = $1
+
+        AND id <> $2
+
+        AND estado = 'PENDIENTE';
+
+    `;
+
+    await db.query(query, [
+
+        inmuebleId,
+
+        solicitudAceptadaId
+
+    ]);
+
+}
 
 }
 

@@ -7,7 +7,7 @@ const errorMiddleware = (err, req, res, next) => {
     return error(
         res,
         err.message || "Error interno del servidor",
-        err.status || 500
+        err.statusCode || 500
     );
 
 };
