@@ -83,7 +83,7 @@ class SolicitudController {
 
             res.json({
                 ok: true,
-                mensaje: "Solicitud aceptada.",
+                mensaje: "Solicitud aceptada",
                 data: resultado
             });
 

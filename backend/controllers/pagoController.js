@@ -31,7 +31,7 @@ class PagoController {
 
                 success: true,
 
-                message: "Pago registrado correctamente.",
+                message: "Pago creado correctamente.",
 
                 data: pago
 
