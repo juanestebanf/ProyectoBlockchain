@@ -10,6 +10,7 @@ const inmuebleRoutes = require("./routes/inmuebleRoutes");
 const solicitudRoutes = require("./routes/solicitudRoutes");
 const contratoRoutes = require("./routes/contratoRoutes");
 const pagoRoutes = require("./routes/pagoRoutes");
+const blockchainRoutes = require("./routes/blockchainRoutes");
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/inmuebles", inmuebleRoutes); // INMUEBLES
 app.use("/api/solicitudes", solicitudRoutes); // SOLICITUDES
 app.use("/api/contratos", contratoRoutes); //CONTRATOS
 app.use("/api/pagos", pagoRoutes); // PAGOS
+app.use("/api/blockchain", blockchainRoutes); //BLOCKCHAIN
 
 // Middleware de errores
 app.use(errorMiddleware);

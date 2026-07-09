@@ -1,12 +1,11 @@
-const PagoService = require("../services/pagoService");
 const { validationResult } = require("express-validator");
+const pagoService = require("../services/pagoService");
 
 class PagoController {
 
-    // =====================================
-    // CREAR PAGO
-    // =====================================
-
+    // ===============================
+    // Crear pago
+    // ===============================
     async crear(req, res, next) {
 
         try {
@@ -17,7 +16,7 @@ class PagoController {
 
                 return res.status(400).json({
 
-                    success: false,
+                    ok: false,
 
                     errores: errores.array()
 
@@ -25,13 +24,23 @@ class PagoController {
 
             }
 
-            const pago = await PagoService.crear(req.body);
+            const pago = await pagoService.crear({
 
-            return res.status(201).json({
+                contrato_id: req.body.contrato_id,
 
-                success: true,
+                monto: req.body.monto,
 
-                message: "Pago registrado correctamente.",
+                metodo_pago: req.body.metodo_pago,
+
+                referencia: req.body.referencia
+
+            });
+
+            res.status(201).json({
+
+                ok: true,
+
+                mensaje: "Pago registrado correctamente.",
 
                 data: pago
 
@@ -45,47 +54,18 @@ class PagoController {
 
     }
 
-    // =====================================
-    // LISTAR TODOS
-    // =====================================
-
+    // ===============================
+    // Listar todos (ADMIN)
+    // ===============================
     async listar(req, res, next) {
 
         try {
 
-            const pagos = await PagoService.listar();
+            const pagos = await pagoService.listar();
 
-            return res.json({
+            res.json({
 
-                success: true,
-
-                data: pagos
-
-            });
-
-        } catch (error) {
-
-            next(error);
-
-        }
-
-    }
-
-    // =====================================
-    // LISTAR POR CONTRATO
-    // =====================================
-
-    async listarPorContrato(req, res, next) {
-
-        try {
-
-            const { contratoId } = req.params;
-
-            const pagos = await PagoService.listarPorContrato(contratoId);
-
-            return res.json({
-
-                success: true,
+                ok: true,
 
                 data: pagos
 
@@ -99,21 +79,22 @@ class PagoController {
 
     }
 
-    // =====================================
-    // LISTAR MIS PAGOS
-    // =====================================
-
+    // ===============================
+    // Mis pagos
+    // ===============================
     async listarPorUsuario(req, res, next) {
 
         try {
 
-            const usuarioId = req.usuario.id;
+            const pagos = await pagoService.listarPorUsuario(
 
-            const pagos = await PagoService.listarPorUsuario(usuarioId);
+                req.usuario.id
 
-            return res.json({
+            );
 
-                success: true,
+            res.json({
+
+                ok: true,
 
                 data: pagos
 
@@ -127,59 +108,51 @@ class PagoController {
 
     }
 
-    // =====================================
-    // OBTENER POR ID
-    // =====================================
+    // ===============================
+    // Pagos por contrato
+    // ===============================
+    async listarPorContrato(req, res, next) {
 
+        try {
+
+            const pagos = await pagoService.listarPorContrato(
+
+                req.params.contratoId
+
+            );
+
+            res.json({
+
+                ok: true,
+
+                data: pagos
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    // ===============================
+    // Obtener pago
+    // ===============================
     async obtenerPorId(req, res, next) {
 
         try {
 
-            const { id } = req.params;
+            const pago = await pagoService.obtenerPorId(
 
-            const pago = await PagoService.obtenerPorId(id);
-
-            return res.json({
-
-                success: true,
-
-                data: pago
-
-            });
-
-        } catch (error) {
-
-            next(error);
-
-        }
-
-    }
-
-    // =====================================
-    // ACTUALIZAR ESTADO
-    // =====================================
-
-    async actualizarEstado(req, res, next) {
-
-        try {
-
-            const { id } = req.params;
-
-            const { estado } = req.body;
-
-            const pago = await PagoService.actualizarEstado(
-
-                id,
-
-                estado
+                req.params.id
 
             );
 
-            return res.json({
+            res.json({
 
-                success: true,
-
-                message: "Estado actualizado correctamente.",
+                ok: true,
 
                 data: pago
 
@@ -193,69 +166,92 @@ class PagoController {
 
     }
 
-    // =====================================
-    // ACTUALIZAR TX HASH
-    // =====================================
+    // ===============================
+    // Confirmar pago
+    // ===============================
+    async confirmar(req, res, next) {
 
+        try {
+
+            const pago = await pagoService.actualizarEstado(
+
+                req.params.id,
+
+                "CONFIRMADO"
+
+            );
+
+            res.json({
+
+                ok: true,
+
+                mensaje: "Pago confirmado.",
+
+                data: pago
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    // ===============================
+    // Rechazar pago
+    // ===============================
+    async rechazar(req, res, next) {
+
+        try {
+
+            const pago = await pagoService.actualizarEstado(
+
+                req.params.id,
+
+                "RECHAZADO"
+
+            );
+
+            res.json({
+
+                ok: true,
+
+                mensaje: "Pago rechazado.",
+
+                data: pago
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    // ===============================
+    // Registrar hash Blockchain
+    // ===============================
     async actualizarTxHash(req, res, next) {
 
         try {
 
-            const { id } = req.params;
+            const pago = await pagoService.actualizarTxHash(
 
-            const { txHash } = req.body;
+                req.params.id,
 
-            const pago = await PagoService.actualizarTxHash(
-
-                id,
-
-                txHash
+                req.body.tx_hash
 
             );
 
-            return res.json({
+            res.json({
 
-                success: true,
+                ok: true,
 
-                message: "Hash almacenado correctamente.",
-
-                data: pago
-
-            });
-
-        } catch (error) {
-
-            next(error);
-
-        }
-
-    }
-
-    // =====================================
-    // ACTUALIZAR REFERENCIA
-    // =====================================
-
-    async actualizarReferencia(req, res, next) {
-
-        try {
-
-            const { id } = req.params;
-
-            const { referencia } = req.body;
-
-            const pago = await PagoService.actualizarReferencia(
-
-                id,
-
-                referencia
-
-            );
-
-            return res.json({
-
-                success: true,
-
-                message: "Referencia actualizada correctamente.",
+                mensaje: "Hash registrado correctamente.",
 
                 data: pago
 

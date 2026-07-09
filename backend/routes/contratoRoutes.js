@@ -3,6 +3,7 @@ const router = express.Router();
 
 const ContratoController = require("../controllers/contratoController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
 const { body, param } = require("express-validator");
 
@@ -13,6 +14,7 @@ const { body, param } = require("express-validator");
 router.post(
     "/",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         body("solicitudId")
             .isInt()
@@ -28,7 +30,7 @@ router.post(
 router.get(
     "/",
     authMiddleware,
-    ContratoController.listar
+    roleMiddleware("ADMIN"),
 );
 
 
@@ -37,8 +39,8 @@ router.get(
 // ================================
 router.get(
     "/mis-contratos",
-    authMiddleware,
-    ContratoController.listarPorUsuario
+   authMiddleware,
+    roleMiddleware("CLIENTE", "PROPIETARIO"),
 );
 
 
@@ -48,6 +50,11 @@ router.get(
 router.get(
     "/:id",
     authMiddleware,
+    roleMiddleware(
+        "ADMIN",
+        "CLIENTE",
+        "PROPIETARIO"
+    ),
     [
         param("id")
             .isInt()
@@ -63,6 +70,7 @@ router.get(
 router.put(
     "/:id/estado",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         param("id").isInt(),
         body("estado").notEmpty()
@@ -77,6 +85,7 @@ router.put(
 router.put(
     "/:id/tx",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         param("id").isInt(),
         body("txHash").notEmpty()
@@ -91,6 +100,7 @@ router.put(
 router.put(
     "/:id/observaciones",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         param("id").isInt(),
         body("observaciones").notEmpty()
@@ -105,6 +115,7 @@ router.put(
 router.put(
     "/:id/fechas",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         param("id").isInt(),
         body("fechaInicio").notEmpty(),
@@ -120,6 +131,7 @@ router.put(
 router.put(
     "/:id/incumplimiento",
     authMiddleware,
+    roleMiddleware("ADMIN"),
     [
         param("id").isInt(),
         body("observacion").notEmpty()

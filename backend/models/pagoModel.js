@@ -259,6 +259,33 @@ class PagoModel {
         return rows[0];
 
     }
+    // Buscar si ya existe un pago pendiente para el contrato
+
+    async buscarPendientePorContrato(contratoId) {
+
+        const query = `
+
+            SELECT *
+
+            FROM pagos
+
+            WHERE contrato_id = $1
+
+            AND estado = 'PENDIENTE'
+
+            LIMIT 1;
+
+        `;
+
+        const { rows } = await db.query(query, [
+
+            contratoId
+
+        ]);
+
+        return rows[0];
+
+    }
 
 }
 

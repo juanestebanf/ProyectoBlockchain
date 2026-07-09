@@ -5,14 +5,15 @@ const { body, param } = require("express-validator");
 
 const PagoController = require("../controllers/pagoController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
-// =====================================
+router.use(authMiddleware);
+
 // CREAR PAGO
-// =====================================
 
 router.post(
     "/",
-    authMiddleware,
+    roleMiddleware("CLIENTE"),
     [
         body("contrato_id")
             .isInt()
@@ -29,33 +30,27 @@ router.post(
     PagoController.crear
 );
 
-// =====================================
 // LISTAR TODOS
-// =====================================
 
 router.get(
     "/",
-    authMiddleware,
+    roleMiddleware("ADMIN"),
     PagoController.listar
 );
 
-// =====================================
-// LISTAR MIS PAGOS
-// =====================================
+// MIS PAGOS
 
 router.get(
     "/mis-pagos",
-    authMiddleware,
+    roleMiddleware("CLIENTE", "PROPIETARIO"),
     PagoController.listarPorUsuario
 );
 
-// =====================================
-// LISTAR POR CONTRATO
-// =====================================
+// PAGOS DE UN CONTRATO
 
 router.get(
     "/contrato/:contratoId",
-    authMiddleware,
+    roleMiddleware("ADMIN", "CLIENTE", "PROPIETARIO"),
     [
         param("contratoId")
             .isInt()
@@ -64,13 +59,11 @@ router.get(
     PagoController.listarPorContrato
 );
 
-// =====================================
 // OBTENER POR ID
-// =====================================
 
 router.get(
     "/:id",
-    authMiddleware,
+    roleMiddleware("ADMIN", "CLIENTE", "PROPIETARIO"),
     [
         param("id")
             .isInt()
@@ -79,60 +72,47 @@ router.get(
     PagoController.obtenerPorId
 );
 
-// =====================================
-// ACTUALIZAR ESTADO
-// =====================================
+// CONFIRMAR PAGO
 
 router.put(
-    "/:id/estado",
-    authMiddleware,
+    "/:id/confirmar",
+    roleMiddleware("ADMIN"),
     [
-        param("id").isInt(),
-
-        body("estado")
-            .isIn([
-                "PENDIENTE",
-                "PAGADO",
-                "VENCIDO",
-                "ANULADO"
-            ])
-            .withMessage("Estado no válido.")
+        param("id")
+            .isInt()
+            .withMessage("ID inválido.")
     ],
-    PagoController.actualizarEstado
+    PagoController.confirmar
 );
 
-// =====================================
-// ACTUALIZAR TX HASH
-// =====================================
+// RECHAZAR PAGO
+
+router.put(
+    "/:id/rechazar",
+    roleMiddleware("ADMIN"),
+    [
+        param("id")
+            .isInt()
+            .withMessage("ID inválido.")
+    ],
+    PagoController.rechazar
+);
+
+// REGISTRAR HASH BLOCKCHAIN
 
 router.put(
     "/:id/tx",
-    authMiddleware,
+    roleMiddleware("ADMIN"),
     [
-        param("id").isInt(),
+        param("id")
+            .isInt()
+            .withMessage("ID inválido."),
 
-        body("txHash")
+        body("tx_hash")
             .notEmpty()
-            .withMessage("Debe proporcionar el hash.")
+            .withMessage("Debe proporcionar el tx_hash.")
     ],
     PagoController.actualizarTxHash
-);
-
-// =====================================
-// ACTUALIZAR REFERENCIA
-// =====================================
-
-router.put(
-    "/:id/referencia",
-    authMiddleware,
-    [
-        param("id").isInt(),
-
-        body("referencia")
-            .notEmpty()
-            .withMessage("La referencia es obligatoria.")
-    ],
-    PagoController.actualizarReferencia
 );
 
 module.exports = router;

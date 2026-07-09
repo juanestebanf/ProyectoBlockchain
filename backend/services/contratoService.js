@@ -1,8 +1,8 @@
 const db = require("../config/db");
 
-const ContratoModel = require("../models/contratoModel");
-const SolicitudModel = require("../models/solicitudModel");
-const InmuebleModel = require("../models/inmuebleModel");
+const contratoModel = require("../models/contratoModel");
+const solicitudModel = require("../models/solicitudModel");
+const inmuebleModel = require("../models/inmuebleModel");
 
 const AppError = require("../utils/AppError");
 
@@ -11,7 +11,7 @@ class ContratoService {
     // =========================================
     // CREAR CONTRATO DESDE SOLICITUD
     // =========================================
-    async crearDesdeSolicitud(solicitudId) {
+    async crearDesdeSolicitud(solicitudId, observacion = null) {
 
         const cliente = await db.connect();
 
@@ -19,61 +19,89 @@ class ContratoService {
 
             await cliente.query("BEGIN");
 
-            // 1. Obtener solicitud completa
-            const solicitud = await SolicitudModel.buscarCompletaPorId(solicitudId);
+            // Buscar la solicitud con toda la información necesaria
+            const solicitud = await solicitudModel.buscarCompletaPorId(
+                solicitudId
+            );
 
             if (!solicitud) {
-                throw new AppError("Solicitud no encontrada.", 404);
+                throw new AppError(
+                    "La solicitud no existe.",
+                    404
+                );
             }
 
-            // 2. Validar estado
-            if (solicitud.estado !== "ACEPTADA") {
-                throw new AppError("La solicitud no está aceptada.", 400);
+            if (solicitud.estado !== "PENDIENTE") {
+                throw new AppError(
+                    "La solicitud ya fue procesada.",
+                    400
+                );
             }
 
-            // 3. Evitar duplicidad de contrato
+            // Verificar que no exista un contrato previo
             const contratoExistente =
-                await ContratoModel.buscarPorSolicitud(solicitudId);
+                await contratoModel.buscarPorSolicitud(
+                    solicitud.id
+                );
 
             if (contratoExistente) {
-                throw new AppError("Ya existe un contrato para esta solicitud.", 400);
+                throw new AppError(
+                    "Ya existe un contrato para esta solicitud.",
+                    400
+                );
             }
 
-            // 4. Crear contrato
-            const contrato = await ContratoModel.crear({
+            // 1. Aceptar la solicitud
+            await solicitudModel.actualizarEstado(
+
+                solicitud.id,
+
+                "ACEPTADA",
+
+                observacion
+
+            );
+
+            // 2. Crear contrato
+            const contrato = await contratoModel.crear({
+
                 solicitud_id: solicitud.id,
+
                 inmueble_id: solicitud.inmueble_id,
+
                 propietario_id: solicitud.propietario_id,
+
                 cliente_id: solicitud.cliente_id,
+
                 monto: solicitud.precio,
+
                 fecha_inicio: null,
+
                 fecha_fin: null,
+
                 estado: "PENDIENTE_FIRMA",
-                observaciones: null
+
+                observaciones:
+                    "Contrato generado automáticamente desde la solicitud."
+
             });
 
-            // 5. Actualizar disponibilidad del inmueble
-            const nuevoEstado =
-                solicitud.tipo_operacion === "VENTA"
-                    ? "VENDIDO"
-                    : "ALQUILADO";
+            // 3. Reservar inmueble
+            await inmuebleModel.actualizarDisponibilidad(
 
-            await InmuebleModel.actualizarDisponibilidad(
                 solicitud.inmueble_id,
-                nuevoEstado
+
+                "RESERVADO"
+
             );
 
-            // 6. Actualizar solicitud
-            await SolicitudModel.actualizarEstado(
-                solicitud.id,
-                "ACEPTADA",
-                "Contrato generado correctamente."
-            );
+            // 4. Rechazar las demás solicitudes
+            await solicitudModel.rechazarPendientesPorInmueble(
 
-            // 7. Cancelar otras solicitudes
-            await SolicitudModel.rechazarPendientesPorInmueble(
                 solicitud.inmueble_id,
+
                 solicitud.id
+
             );
 
             await cliente.query("COMMIT");
@@ -83,11 +111,15 @@ class ContratoService {
         } catch (error) {
 
             await cliente.query("ROLLBACK");
+
             throw error;
 
         } finally {
+
             cliente.release();
+
         }
+
     }
 
     // =========================================

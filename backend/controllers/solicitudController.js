@@ -77,7 +77,6 @@ class SolicitudController {
 
             const resultado = await solicitudService.aceptar(
                 req.params.id,
-                req.usuario.id,
                 req.body.observacion
             );
 
@@ -106,7 +105,6 @@ class SolicitudController {
 
             const resultado = await solicitudService.rechazar(
                 req.params.id,
-                req.usuario.id,
                 req.body.observacion
             );
 

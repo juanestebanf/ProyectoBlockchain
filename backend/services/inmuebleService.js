@@ -109,6 +109,7 @@ class InmuebleService {
             "PENDIENTE",
             "APROBADO",
             "RECHAZADO",
+            "RESERVADO",
             "ALQUILADO",
             "VENDIDO"
         ];

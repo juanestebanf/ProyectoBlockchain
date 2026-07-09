@@ -3,8 +3,8 @@ const express = require("express");
 const router = express.Router();
 
 const inmuebleController = require("../controllers/inmuebleController");
-
 const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
 const {
     inmuebleValidator
@@ -44,6 +44,8 @@ router.post(
 
     authMiddleware,
 
+    roleMiddleware("ADMIN", "PROPIETARIO"),
+
     inmuebleValidator,
 
     validate,
@@ -58,6 +60,8 @@ router.put(
 
     authMiddleware,
 
+    roleMiddleware("ADMIN", "PROPIETARIO"),
+
     inmuebleValidator,
 
     validate,
@@ -71,6 +75,8 @@ router.delete(
     "/:id",
 
     authMiddleware,
+
+    roleMiddleware("ADMIN", "PROPIETARIO"),
 
     inmuebleController.eliminar
 

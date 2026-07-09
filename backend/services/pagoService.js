@@ -31,6 +31,19 @@ class PagoService {
             );
 
         }
+        const pagoPendiente =
+            await PagoModel.buscarPendientePorContrato(
+                datos.contrato_id
+            );
+
+        if (pagoPendiente) {
+
+            throw new AppError(
+                "Ya existe un pago pendiente para este contrato.",
+                400
+            );
+
+        }
 
         const pago = await PagoModel.crear({
 
@@ -38,7 +51,7 @@ class PagoService {
 
             monto: datos.monto,
 
-            estado: "PENDIENTE",
+            estado: "PAGO_PENDIENTE",
 
             metodo_pago: datos.metodo_pago,
 

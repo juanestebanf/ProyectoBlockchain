@@ -1,5 +1,7 @@
 const solicitudModel = require("../models/solicitudModel");
 const inmuebleModel = require("../models/inmuebleModel");
+const contratoService = require("./contratoService");
+
 const AppError = require("../utils/AppError");
 
 class SolicitudService {
@@ -19,14 +21,13 @@ class SolicitudService {
 
         }
 
-        if (inmueble.estado !== "APROBADO") {
-
+        if (inmueble.estado_disponibilidad !== "DISPONIBLE") {
             throw new AppError(
-                "Este inmueble aún no está disponible.",
+                "Este inmueble no está disponible para solicitudes.",
                 400
             );
-
         }
+
 
         if (inmueble.propietario_id === datos.cliente_id) {
 
@@ -70,7 +71,7 @@ class SolicitudService {
 
     }
 
-    async aceptar(id, propietarioId, observacion) {
+    async aceptar(id, usuario, observacion) {
 
         const solicitud = await solicitudModel.buscarPorId(id);
 
@@ -87,14 +88,6 @@ class SolicitudService {
             solicitud.inmueble_id
         );
 
-        if (inmueble.propietario_id !== propietarioId) {
-
-            throw new AppError(
-                "No tienes permisos.",
-                403
-            );
-
-        }
 
         if (solicitud.estado !== "PENDIENTE") {
 
@@ -105,49 +98,23 @@ class SolicitudService {
 
         }
 
-        const resultado = await solicitudModel.actualizarEstado(
+       const contrato = await contratoService.crearDesdeSolicitud(
 
-            id,
-
-            "ACEPTADA",
+            solicitud.id,
 
             observacion
 
         );
 
-        const nuevoEstado =
+        return {
 
-            inmueble.tipo_operacion === "ALQUILER"
-                ? "ALQUILADO"
-                : "VENDIDO";
-
-        await inmuebleModel.actualizarEstado(
-
-            inmueble.id,
-
-            nuevoEstado
-
-        );
-
-        await solicitudModel.cancelarSolicitudesRestantes(
-
-            inmueble.id,
-
-            solicitud.id
-
-        );
-
-        /*
-            Próxima fase:
-
-            contratoService.crearDesdeSolicitud()
-        */
-
-        return resultado;
+            solicitud: await solicitudModel.buscarPorId(id),
+            contrato
+        };
 
     }
 
-    async rechazar(id, propietarioId, observacion) {
+    async rechazar(id, usuario, observacion) {
 
         const solicitud = await solicitudModel.buscarPorId(id);
 
@@ -163,15 +130,6 @@ class SolicitudService {
         const inmueble = await inmuebleModel.buscarPorId(
             solicitud.inmueble_id
         );
-
-        if (inmueble.propietario_id !== propietarioId) {
-
-            throw new AppError(
-                "No tienes permisos.",
-                403
-            );
-
-        }
 
         if (solicitud.estado !== "PENDIENTE") {
 
