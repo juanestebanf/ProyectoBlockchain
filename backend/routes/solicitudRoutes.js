@@ -15,20 +15,20 @@ router.use(authMiddleware);
 
 router.post(
     "/",
-    roleMiddleware("CLIENTE"),
+    roleMiddleware("USUARIO", "ADMIN"),
     crearSolicitudValidator,
     controller.crear
 );
 
 router.get(
     "/mis-solicitudes",
-    roleMiddleware("CLIENTE"),
+    roleMiddleware("USUARIO", "ADMIN"),
     controller.listarMisSolicitudes
 );
 
 router.get(
     "/recibidas",
-    roleMiddleware("PROPIETARIO"),
+    roleMiddleware("USUARIO", "ADMIN"),
     controller.listarRecibidas
 );
 

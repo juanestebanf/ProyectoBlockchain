@@ -44,7 +44,7 @@ router.post(
 
     authMiddleware,
 
-    roleMiddleware("ADMIN", "PROPIETARIO"),
+    roleMiddleware("ADMIN", "USUARIO"),
 
     inmuebleValidator,
 
@@ -60,7 +60,7 @@ router.put(
 
     authMiddleware,
 
-    roleMiddleware("ADMIN", "PROPIETARIO"),
+    roleMiddleware("ADMIN", "USUARIO"),
 
     inmuebleValidator,
 
@@ -76,7 +76,7 @@ router.delete(
 
     authMiddleware,
 
-    roleMiddleware("ADMIN", "PROPIETARIO"),
+    roleMiddleware("ADMIN", "USUARIO"),
 
     inmuebleController.eliminar
 

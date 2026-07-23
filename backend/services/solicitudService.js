@@ -71,7 +71,7 @@ class SolicitudService {
 
     }
 
-    async aceptar(id, usuario, observacion) {
+    async aceptar(id, observacion) {
 
         const solicitud = await solicitudModel.buscarPorId(id);
 
@@ -114,7 +114,7 @@ class SolicitudService {
 
     }
 
-    async rechazar(id, usuario, observacion) {
+    async rechazar(id, observacion) {
 
         const solicitud = await solicitudModel.buscarPorId(id);
 

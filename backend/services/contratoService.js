@@ -3,6 +3,7 @@ const db = require("../config/db");
 const contratoModel = require("../models/contratoModel");
 const solicitudModel = require("../models/solicitudModel");
 const inmuebleModel = require("../models/inmuebleModel");
+const blockchainService = require("./blockchainService");
 
 const AppError = require("../utils/AppError");
 
@@ -103,6 +104,14 @@ class ContratoService {
                 solicitud.id
 
             );
+            // 5. Registrar evento en Blockchain
+            await blockchainService.registrarEvento({
+
+                contrato_id: contrato.id,
+
+                evento: "CONTRATO_CREADO"
+
+            });
 
             await cliente.query("COMMIT");
 
