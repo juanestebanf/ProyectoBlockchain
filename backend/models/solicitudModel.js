@@ -180,39 +180,51 @@ class SolicitudModel {
 
     async buscarCompletaPorId(id) {
 
-        const query = `
+    const query = `
 
-            SELECT
+        SELECT
 
-                s.*,
+            s.*,
 
-                i.propietario_id,
+            i.propietario_id,
 
-                i.precio,
+            i.precio,
 
-                i.tipo_operacion,
+            i.tipo_operacion,
 
-                i.estado AS estado_inmueble,
-                
-                i.estado_disponibilidad,
+            i.estado AS estado_inmueble,
 
-                i.titulo
+            i.estado_disponibilidad,
 
-            FROM solicitudes s
+            i.titulo,
 
-            INNER JOIN inmuebles i
+            propietario.wallet AS wallet_propietario,
 
-                ON i.id = s.inmueble_id
+            cliente.wallet AS wallet_cliente
 
-            WHERE s.id = $1;
+        FROM solicitudes s
 
-        `;
+        INNER JOIN inmuebles i
 
-        const { rows } = await db.query(query, [id]);
+            ON i.id = s.inmueble_id
 
-        return rows[0];
+        INNER JOIN usuarios propietario
 
-    }
+            ON propietario.id = i.propietario_id
+
+        INNER JOIN usuarios cliente
+
+            ON cliente.id = s.cliente_id
+
+        WHERE s.id = $1;
+
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+
+}
     async rechazarPendientesPorInmueble(inmuebleId, solicitudAceptadaId) {
 
     const query = `

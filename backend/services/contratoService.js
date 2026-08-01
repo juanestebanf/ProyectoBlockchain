@@ -1,9 +1,11 @@
 const db = require("../config/db");
 
+const smartRentService = require("../blockchain/services/smartRentService");
 const contratoModel = require("../models/contratoModel");
 const solicitudModel = require("../models/solicitudModel");
 const inmuebleModel = require("../models/inmuebleModel");
 const blockchainService = require("./blockchainService");
+const usuarioModel = require("../models/usuarioModel");
 
 const AppError = require("../utils/AppError");
 
@@ -86,6 +88,51 @@ class ContratoService {
                     "Contrato generado automáticamente desde la solicitud."
 
             });
+            
+            const propietario = await usuarioModel.buscarPorId(
+                contrato.propietario_id
+            );
+
+            if (!propietario.private_key) {
+
+                throw new AppError(
+                    "El propietario no tiene una wallet configurada.",
+                    400
+                );
+
+            }
+
+            const blockchain = await smartRentService.crearContrato(
+
+                {
+
+                    idContrato: contrato.id,
+
+                    idInmueble: contrato.inmueble_id,
+
+                    tituloInmueble: solicitud.titulo,
+
+                    propietario: solicitud.wallet_propietario,
+
+                    cliente: solicitud.wallet_cliente,
+
+                    monto: contrato.monto,
+
+                    tipoOperacion: solicitud.tipo_operacion
+
+                },
+
+                propietario.private_key
+
+            );
+            await contratoModel.actualizarBlockchain(
+
+                contrato.id,
+
+                blockchain.txHash
+
+            );
+
 
             // 3. Reservar inmueble
             await inmuebleModel.actualizarDisponibilidad(
@@ -109,7 +156,11 @@ class ContratoService {
 
                 contrato_id: contrato.id,
 
-                evento: "CONTRATO_CREADO"
+                evento: "CONTRATO_CREADO",
+
+                tx_hash: blockchain.txHash,
+
+                bloque: blockchain.bloque
 
             });
 
@@ -130,19 +181,109 @@ class ContratoService {
         }
 
     }
+    // =========================================
+    // =========================================
+    // FIRMA DEL PROPIETARIO
+    // =========================================
+    async firmarPropietario(idContrato, usuario) {
+
+        const contrato = await contratoModel.buscarPorId(
+            idContrato
+        );
+
+        if (!contrato) {
+
+            throw new AppError(
+                "Contrato no encontrado.",
+                404
+            );
+
+        }
+
+        // Solo el propietario o un administrador pueden firmar
+    if (
+
+        usuario.rol !== "ADMIN" &&
+
+        Number(contrato.propietario_id) !== Number(usuario.id)
+
+    ) {
+
+        throw new AppError(
+            "No puede firmar este contrato.",
+            403
+        );
+
+    }
+
+    // Obtener la wallet del usuario desde la BD
+    const usuarioBD = await usuarioModel.buscarPorId(
+        usuario.id
+    );
+
+    if (!usuarioBD.private_key) {
+
+        throw new AppError(
+            "El usuario no tiene una wallet configurada.",
+            400
+        );
+
+    }
+
+    // Firmar en blockchain usando SU wallet
+    const blockchain =
+        await smartRentService.firmarPropietario(
+
+            contrato.id,
+
+            usuarioBD.private_key
+
+        );
+
+        // Actualizar último TX del contrato
+        await contratoModel.actualizarBlockchain(
+
+            contrato.id,
+
+            blockchain.txHash
+
+        );
+
+        // Guardar evidencia en blockchain_eventos
+        await blockchainService.registrarEvento({
+
+            contrato_id: contrato.id,
+
+            evento: "FIRMA_PROPIETARIO",
+
+            tx_hash: blockchain.txHash,
+
+            bloque: blockchain.bloque
+
+        });
+
+        return {
+
+            contrato,
+
+            blockchain
+
+        };
+
+    }
 
     // =========================================
     // LISTAR TODOS LOS CONTRATOS
     // =========================================
     async listar() {
-        return await ContratoModel.listar();
+        return await contratoModel.listar();
     }
 
     // =========================================
     // LISTAR POR USUARIO
     // =========================================
     async listarPorUsuario(usuarioId) {
-        return await ContratoModel.listarPorUsuario(usuarioId);
+        return await contratoModel.listarPorUsuario(usuarioId);
     }
 
     // =========================================
@@ -150,7 +291,7 @@ class ContratoService {
     // =========================================
     async obtenerPorId(id) {
 
-        const contrato = await ContratoModel.buscarPorId(id);
+        const contrato = await contratoModel.buscarPorId(id);
 
         if (!contrato) {
             throw new AppError("Contrato no encontrado.", 404);
@@ -163,40 +304,134 @@ class ContratoService {
     // ACTUALIZAR ESTADO
     // =========================================
     async actualizarEstado(id, estado) {
-        return await ContratoModel.actualizarEstado(id, estado);
+        return await contratoModel.actualizarEstado(id, estado);
     }
 
     // =========================================
     // GUARDAR TX BLOCKCHAIN
     // =========================================
     async actualizarTxHash(id, txHash) {
-        return await ContratoModel.actualizarTxHash(id, txHash);
+        return await contratoModel.actualizarTxHash(id, txHash);
     }
 
     // =========================================
     // AGREGAR OBSERVACIONES
     // =========================================
     async actualizarObservaciones(id, observaciones) {
-        return await ContratoModel.actualizarObservaciones(id, observaciones);
+        return await contratoModel.actualizarObservaciones(id, observaciones);
     }
 
     // =========================================
     // ACTUALIZAR FECHAS
     // =========================================
     async actualizarFechas(id, fechaInicio, fechaFin) {
-        return await ContratoModel.actualizarFechas(id, fechaInicio, fechaFin);
+        return await contratoModel.actualizarFechas(id, fechaInicio, fechaFin);
     }
 
     // =========================================
     // ESTADO + OBSERVACIONES (INCUMPLIMIENTO)
     // =========================================
     async registrarIncumplimiento(id, observacion) {
-        return await ContratoModel.actualizarEstadoYObservaciones(
+        return await contratoModel.actualizarEstadoYObservaciones(
             id,
             "INCUMPLIDO",
             observacion
         );
     }
+    
+// =========================================
+// FIRMA DEL CLIENTE
+// =========================================
+
+async firmarCliente(idContrato, usuario) {
+
+    const contrato =
+        await contratoModel.buscarPorId(idContrato);
+
+    if (!contrato) {
+
+        throw new AppError(
+            "Contrato no encontrado.",
+            404
+        );
+
+    }
+
+    // Solo el cliente o un administrador pueden firmar
+    if (
+
+        usuario.rol !== "ADMIN" &&
+
+        Number(contrato.cliente_id) !== Number(usuario.id)
+
+    ) {
+
+        throw new AppError(
+            "No puede firmar este contrato.",
+            403
+        );
+
+    }
+
+    // Obtener la información completa del usuario
+    const usuarioBD =
+        await usuarioModel.buscarPorId(
+            usuario.id
+        );
+
+    if (!usuarioBD.private_key) {
+
+        throw new AppError(
+            "El usuario no tiene una wallet configurada.",
+            400
+        );
+
+    }
+
+    // Firmar usando la wallet del cliente
+    const blockchain =
+        await smartRentService.firmarCliente(
+
+            contrato.id,
+
+            usuarioBD.private_key
+
+        );
+
+    // Registrar evento en blockchain_eventos
+    await blockchainService.registrarEvento({
+
+        contrato_id: contrato.id,
+
+        evento: "FIRMA_CLIENTE",
+
+        tx_hash: blockchain.txHash,
+
+        bloque: blockchain.bloque
+
+    });
+
+    // Actualizar estado del contrato
+    await contratoModel.actualizarEstado(
+
+        contrato.id,
+
+        "ACTIVO"
+
+    );
+
+    return {
+
+        contrato:
+            await contratoModel.buscarPorId(
+                contrato.id
+            ),
+
+        blockchain
+
+    };
+
+}
 }
 
 module.exports = new ContratoService();

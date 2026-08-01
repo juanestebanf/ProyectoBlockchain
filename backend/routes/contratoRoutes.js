@@ -77,6 +77,40 @@ router.put(
     ],
     ContratoController.actualizarEstado
 );
+router.put(
+    "/:id/firmar-propietario",
+    authMiddleware,
+    roleMiddleware("USUARIO", "ADMIN"),
+    [
+        param("id")
+            .isInt()
+            .withMessage("ID inválido")
+    ],
+    ContratoController.firmarPropietario
+);
+// ================================
+// FIRMA DEL CLIENTE
+// ================================
+
+router.put(
+
+    "/:id/firmar-cliente",
+
+    authMiddleware,
+
+    roleMiddleware("USUARIO", "ADMIN"),
+
+    [
+
+        param("id")
+            .isInt()
+            .withMessage("ID inválido")
+
+    ],
+
+    ContratoController.firmarCliente
+
+);
 
 
 // ================================

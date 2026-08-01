@@ -34,6 +34,72 @@ class ContratoController {
             next(error);
         }
     }
+    // ================================
+    // FIRMA DEL PROPIETARIO
+    // ================================
+    async firmarPropietario(req, res, next) {
+
+        try {
+
+            const { id } = req.params;
+
+            const resultado =
+                await ContratoService.firmarPropietario(
+                    id,
+                    req.usuario
+                );
+
+            return res.json({
+
+                success: true,
+
+                message: "Contrato firmado por el propietario.",
+
+                data: resultado
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+    // ================================
+    // FIRMA DEL CLIENTE
+    // ================================
+
+    async firmarCliente(req, res, next) {
+
+        try {
+
+            const { id } = req.params;
+
+            const resultado =
+                await ContratoService.firmarCliente(
+                    id,
+                    req.usuario
+                );
+
+            return res.json({
+
+                success: true,
+
+                message:
+                    "Contrato firmado por el cliente.",
+
+                data: resultado
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
 
     // ================================
     // LISTAR TODOS (ADMIN)

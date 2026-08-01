@@ -374,6 +374,41 @@ class ContratoModel {
         return rows[0];
 
     }
+    async actualizarBlockchain(id, txHash) {
+
+    const query = `
+
+        UPDATE contratos
+
+        SET
+
+            tx_hash = $1,
+
+            fecha_actualizacion = CURRENT_TIMESTAMP
+
+        WHERE id = $2
+
+        RETURNING *;
+
+    `;
+
+    const { rows } = await db.query(
+
+        query,
+
+        [
+
+            txHash,
+
+            id
+
+        ]
+
+    );
+
+    return rows[0];
+
+}
 
 }
 

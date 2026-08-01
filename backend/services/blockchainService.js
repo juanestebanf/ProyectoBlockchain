@@ -10,11 +10,9 @@ class BlockchainService {
 
     async registrarEvento(datos) {
 
-
         const contrato = await contratoModel.buscarPorId(
             datos.contrato_id
         );
-
 
         if (!contrato) {
 
@@ -25,44 +23,21 @@ class BlockchainService {
 
         }
 
-
-        const informacionHash = {
-
-            contrato_id: contrato.id,
-
-            evento: datos.evento,
-
-            fecha: new Date()
-
-        };
-
-
-        const txHash =
-            hashService.generarHash(
-                informacionHash
-            );
-
-
         const evento = await blockchainModel.crear({
 
             contrato_id: contrato.id,
 
             evento: datos.evento,
 
-            tx_hash: txHash,
+            tx_hash: datos.tx_hash,
 
-            bloque: Date.now()
+            bloque: datos.bloque
 
         });
 
-
         return evento;
 
-
-    }
-
-
-
+}
     async listarEventos() {
 
         return await blockchainModel.listar();
