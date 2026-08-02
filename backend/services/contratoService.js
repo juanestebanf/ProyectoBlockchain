@@ -432,6 +432,114 @@ async firmarCliente(idContrato, usuario) {
     };
 
 }
+// =========================================
+// FINALIZAR CONTRATO
+// =========================================
+
+async finalizarContrato(idContrato, usuario) {
+
+    const contrato =
+        await contratoModel.buscarPorId(idContrato);
+
+    if (!contrato) {
+
+        throw new AppError(
+            "Contrato no encontrado.",
+            404
+        );
+
+    }
+
+    if (contrato.estado !== "ACTIVO") {
+
+        throw new AppError(
+            "Solo un contrato activo puede finalizarse.",
+            400
+        );
+
+    }
+
+    // Solo el propietario, el cliente o un administrador
+    if (
+
+        usuario.rol !== "ADMIN" &&
+
+        Number(contrato.propietario_id) !== Number(usuario.id) &&
+
+        Number(contrato.cliente_id) !== Number(usuario.id)
+
+    ) {
+
+        throw new AppError(
+            "No puede finalizar este contrato.",
+            403
+        );
+
+    }
+
+    const usuarioBD =
+        await usuarioModel.buscarPorId(
+            usuario.id
+        );
+
+    if (!usuarioBD.private_key) {
+
+        throw new AppError(
+            "El usuario no tiene una wallet configurada.",
+            400
+        );
+
+    }
+
+    const blockchain =
+        await smartRentService.finalizarContrato(
+
+            contrato.id,
+
+            usuarioBD.private_key
+
+        );
+
+    await contratoModel.actualizarEstado(
+
+        contrato.id,
+
+        "FINALIZADO"
+
+    );
+
+    await contratoModel.actualizarBlockchain(
+
+        contrato.id,
+
+        blockchain.txHash
+
+    );
+
+    await blockchainService.registrarEvento({
+
+        contrato_id: contrato.id,
+
+        evento: "CONTRATO_FINALIZADO",
+
+        tx_hash: blockchain.txHash,
+
+        bloque: blockchain.bloque
+
+    });
+
+    return {
+
+        contrato:
+            await contratoModel.buscarPorId(
+                contrato.id
+            ),
+
+        blockchain
+
+    };
+
+}
 }
 
 module.exports = new ContratoService();

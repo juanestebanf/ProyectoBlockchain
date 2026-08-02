@@ -85,6 +85,64 @@ class SmartRentService {
         };
 
     }
+    // =====================================
+    // REGISTRAR PAGO
+    // =====================================
+
+    async registrarPago(
+
+        idContrato,
+
+        monto,
+
+        privateKey
+
+    ) {
+
+        const smartRent = obtenerContrato(privateKey);
+
+        const tx = await smartRent.registrarPago(
+
+            idContrato,
+
+            BigInt(parseInt(monto))
+
+        );
+
+        const receipt = await tx.wait();
+
+        return {
+
+            txHash: receipt.hash,
+
+            bloque: receipt.blockNumber
+
+        };
+
+    }
+    // =====================================
+    // FINALIZAR CONTRATO
+    // =====================================
+
+    async finalizarContrato(idContrato, privateKey) {
+
+        const smartRent = obtenerContrato(privateKey);
+
+        const tx = await smartRent.finalizarContrato(
+            idContrato
+        );
+
+        const receipt = await tx.wait();
+
+        return {
+
+            txHash: receipt.hash,
+
+            bloque: receipt.blockNumber
+
+        };
+
+    }
 
 }
 

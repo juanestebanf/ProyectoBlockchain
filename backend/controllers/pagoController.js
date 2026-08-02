@@ -264,6 +264,40 @@ class PagoController {
         }
 
     }
+    // ===============================
+    // Registrar pago en Blockchain
+    // ===============================
+
+    async registrarBlockchain(req, res, next) {
+
+        try {
+
+            const resultado =
+                await pagoService.registrarPago(
+
+                    req.params.id,
+
+                    req.usuario
+
+                );
+
+            res.json({
+
+                success: true,
+
+                message: "Pago registrado en blockchain.",
+
+                data: resultado
+
+            });
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
 
 }
 

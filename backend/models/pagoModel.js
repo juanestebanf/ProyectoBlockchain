@@ -271,7 +271,7 @@ class PagoModel {
 
             WHERE contrato_id = $1
 
-            AND estado = 'PENDIENTE'
+            AND estado = 'PAGO_PENDIENTE'
 
             LIMIT 1;
 

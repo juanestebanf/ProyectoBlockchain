@@ -1,4 +1,4 @@
-const ContratoService = require("../services/ContratoService");
+const ContratoService = require("../services/contratoService");
 const { validationResult } = require("express-validator");
 const AppError = require("../utils/AppError");
 
@@ -266,6 +266,40 @@ class ContratoController {
             next(error);
         }
     }
+    // =========================================
+// FINALIZAR CONTRATO
+// =========================================
+
+async finalizarContrato(req, res, next) {
+
+    try {
+
+        const resultado =
+             await ContratoService.finalizarContrato(
+
+                req.params.id,
+
+                req.usuario
+
+            );
+
+        res.json({
+
+            success: true,
+
+            message: "Contrato finalizado correctamente.",
+
+            data: resultado
+
+        });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+}
 
     // ================================
     // INCUMPLIMIENTO

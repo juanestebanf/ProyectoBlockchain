@@ -2,6 +2,10 @@ const PagoModel = require("../models/pagoModel");
 const ContratoModel = require("../models/contratoModel");
 const AppError = require("../utils/AppError");
 
+const usuarioModel = require("../models/usuarioModel");
+const smartRentService = require("../blockchain/services/smartRentService");
+const blockchainService = require("./blockchainService");
+
 class PagoService {
 
     // =====================================
@@ -187,6 +191,117 @@ class PagoService {
             id,
             referencia
         );
+
+    }
+        async registrarPago(idPago, usuario) {
+
+        const pago =
+            await PagoModel.buscarPorId(idPago);
+
+        if (!pago) {
+
+            throw new AppError(
+                "Pago no encontrado.",
+                404
+            );
+
+        }
+
+        const contrato =
+            await ContratoModel.buscarPorId(
+                pago.contrato_id
+            );
+
+        if (!contrato) {
+
+            throw new AppError(
+                "Contrato no encontrado.",
+                404
+            );
+
+        }
+
+        if (
+
+            usuario.rol !== "ADMIN" &&
+
+            Number(contrato.cliente_id) !== Number(usuario.id)
+
+        ) {
+
+            throw new AppError(
+                "No puede registrar este pago.",
+                403
+            );
+
+        }
+
+        const usuarioBD =
+            await usuarioModel.buscarPorId(
+                usuario.id
+            );
+
+        if (!usuarioBD.private_key) {
+
+            throw new AppError(
+
+                "El usuario no tiene una wallet configurada.",
+
+                400
+
+            );
+
+        }
+
+        const blockchain =
+            await smartRentService.registrarPago(
+
+                contrato.id,
+
+                pago.monto,
+
+                usuarioBD.private_key
+
+            );
+
+        await PagoModel.actualizarTxHash(
+
+            pago.id,
+
+            blockchain.txHash
+
+        );
+
+        await blockchainService.registrarEvento({
+
+            contrato_id: contrato.id,
+
+            evento: "PAGO",
+
+            tx_hash: blockchain.txHash,
+
+            bloque: blockchain.bloque
+
+        });
+
+        await PagoModel.actualizarEstado(
+
+            pago.id,
+
+            "CONFIRMADO"
+
+        );
+
+        return {
+
+            pago:
+                await PagoModel.buscarPorId(
+                    pago.id
+                ),
+
+            blockchain
+
+        };
 
     }
 

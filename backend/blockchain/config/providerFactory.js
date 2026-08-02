@@ -16,7 +16,7 @@ function obtenerContrato(privateKey) {
 
     return new ethers.Contract(
 
-        "0x0B8a851557044e1d8a50AC8D4246E475fdF540ec",
+        "0xfB81973d7F1CaE7B757cEfE0817d567bD4926284",
 
         abi,
 

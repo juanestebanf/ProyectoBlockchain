@@ -13,7 +13,7 @@ router.use(authMiddleware);
 
 router.post(
     "/",
-    roleMiddleware("CLIENTE"),
+    roleMiddleware("USUARIO", "ADMIN"),
     [
         body("contrato_id")
             .isInt()
@@ -42,7 +42,7 @@ router.get(
 
 router.get(
     "/mis-pagos",
-    roleMiddleware("CLIENTE", "PROPIETARIO"),
+    roleMiddleware("USUARIO", "ADMIN"),
     PagoController.listarPorUsuario
 );
 
@@ -50,7 +50,7 @@ router.get(
 
 router.get(
     "/contrato/:contratoId",
-    roleMiddleware("ADMIN", "CLIENTE", "PROPIETARIO"),
+    roleMiddleware("USUARIO", "ADMIN"),
     [
         param("contratoId")
             .isInt()
@@ -63,7 +63,7 @@ router.get(
 
 router.get(
     "/:id",
-    roleMiddleware("ADMIN", "CLIENTE", "PROPIETARIO"),
+    roleMiddleware("USUARIO", "ADMIN"),
     [
         param("id")
             .isInt()
@@ -115,4 +115,23 @@ router.put(
     PagoController.actualizarTxHash
 );
 
+// REGISTRAR PAGO EN BLOCKCHAIN
+
+router.put(
+
+    "/:id/blockchain",
+
+    roleMiddleware("USUARIO", "ADMIN"),
+
+    [
+
+        param("id")
+            .isInt()
+            .withMessage("ID inválido.")
+
+    ],
+
+    PagoController.registrarBlockchain
+
+);
 module.exports = router;

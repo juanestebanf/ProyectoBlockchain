@@ -31,6 +31,7 @@ router.get(
     "/",
     authMiddleware,
     roleMiddleware("ADMIN"),
+    ContratoController.listar
 );
 
 
@@ -39,8 +40,9 @@ router.get(
 // ================================
 router.get(
     "/mis-contratos",
-   authMiddleware,
-    roleMiddleware("CLIENTE", "PROPIETARIO"),
+    authMiddleware,
+    roleMiddleware("USUARIO", "ADMIN"),
+    ContratoController.listarPorUsuario
 );
 
 
@@ -52,8 +54,7 @@ router.get(
     authMiddleware,
     roleMiddleware(
         "ADMIN",
-        "CLIENTE",
-        "PROPIETARIO"
+        "USUARIO"
     ),
     [
         param("id")
@@ -112,6 +113,29 @@ router.put(
 
 );
 
+// ================================
+// FINALIZAR CONTRATO
+// ================================
+
+router.put(
+
+    "/:id/finalizar",
+
+    authMiddleware,
+
+    roleMiddleware("USUARIO", "ADMIN"),
+
+    [
+
+        param("id")
+            .isInt()
+            .withMessage("ID inválido")
+
+    ],
+
+    ContratoController.finalizarContrato
+
+);
 
 // ================================
 // TX HASH BLOCKCHAIN
@@ -130,7 +154,7 @@ router.put(
 
 // ================================
 // OBSERVACIONES
-// ================================
+// ================================a
 router.put(
     "/:id/observaciones",
     authMiddleware,
