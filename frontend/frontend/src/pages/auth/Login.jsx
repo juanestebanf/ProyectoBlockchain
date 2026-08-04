@@ -1,39 +1,89 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import authService from "../../services/authService";
 import Swal from "sweetalert2";
+import useAuth from "../../hooks/useAuth";
+
 
 export default function Login() {
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
 
     e.preventDefault();
 
     if (!correo || !password) {
-      Swal.fire({
-        icon: "warning",
-        title: "Campos vacíos",
-        text: "Complete todos los campos"
-      });
 
-      return;
+        Swal.fire(
+            "Campos vacíos",
+            "Complete todos los campos.",
+            "warning"
+        );
+
+        return;
+
     }
 
-    Swal.fire({
-      icon: "success",
-      title: "Inicio de sesión exitoso",
-      timer: 1500,
-      showConfirmButton: false
-    });
+    try {
 
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1500);
-  };
+        const { data } = await authService.login({
+
+            correo,
+
+            password
+
+        });
+
+        login(
+            data.data.usuario,
+            data.data.token
+        );
+
+        Swal.fire({
+
+            icon: "success",
+            title: "Bienvenido",
+            timer: 1200,
+            showConfirmButton: false
+
+        });
+
+        setTimeout(() => {
+
+            if (data.data.usuario.rol === "ADMIN") {
+
+                navigate("/admin/dashboard");
+
+            } else {
+
+                navigate("/dashboard");
+
+            }
+
+        }, 1200);
+
+    } catch (error) {
+
+        Swal.fire(
+
+            "Error",
+
+            error.response?.data?.message ||
+
+            "Correo o contraseña incorrectos.",
+
+            "error"
+
+        );
+
+    }
+
+};
 
   return (
     <div className="container vh-100 d-flex justify-content-center align-items-center">
@@ -53,7 +103,7 @@ export default function Login() {
           ></i>
 
           <h2 className="fw-bold mt-3">
-            SmartRentChain
+            SmartRent
           </h2>
 
           <p className="text-muted">

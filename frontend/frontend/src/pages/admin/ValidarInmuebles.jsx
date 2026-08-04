@@ -1,42 +1,122 @@
 import Navbar from "../../components/Navbar";
 import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
+import inmuebleService from "../../services/inmuebleService";
 
 export default function ValidarInmuebles() {
 
-  const inmuebles = [
-    {
-      id: 1,
-      titulo: "Casa Familiar Loja",
-      propietario: "Juan Pérez",
-      estado: "PENDIENTE"
-    },
-    {
-      id: 2,
-      titulo: "Terreno Comercial",
-      propietario: "María López",
-      estado: "PENDIENTE"
+  const [inmuebles, setInmuebles] = useState([]);
+
+  useEffect(() => {
+    cargarPendientes();
+  }, []);
+
+  const cargarPendientes = async () => {
+
+    try {
+
+      const { data } = await inmuebleService.listarPendientes();
+
+      setInmuebles(data.data);
+
+    } catch (error) {
+
+      console.error(error);
+
+      Swal.fire(
+        "Error",
+        "No se pudieron cargar los inmuebles.",
+        "error"
+      );
+
     }
-  ];
-
-  const aprobar = () => {
-
-    Swal.fire({
-      icon: "success",
-      title: "Inmueble aprobado"
-    });
 
   };
 
-  const rechazar = () => {
+  const aprobar = async (id) => {
 
-    Swal.fire({
-      icon: "error",
-      title: "Inmueble rechazado"
+    const respuesta = await Swal.fire({
+
+      title: "¿Aprobar inmueble?",
+
+      text: "El inmueble quedará disponible para el público.",
+
+      icon: "question",
+
+      showCancelButton: true,
+
+      confirmButtonText: "Sí, aprobar"
+
     });
+
+    if (!respuesta.isConfirmed) return;
+
+    try {
+
+      await inmuebleService.aprobar(id);
+
+      Swal.fire(
+        "Correcto",
+        "Inmueble aprobado.",
+        "success"
+      );
+
+      cargarPendientes();
+
+    } catch (error) {
+
+      Swal.fire(
+        "Error",
+        error.response?.data?.message || "No se pudo aprobar.",
+        "error"
+      );
+
+    }
+
+  };
+
+  const rechazar = async (id) => {
+
+    const respuesta = await Swal.fire({
+
+      title: "¿Rechazar inmueble?",
+
+      icon: "warning",
+
+      showCancelButton: true,
+
+      confirmButtonText: "Sí, rechazar"
+
+    });
+
+    if (!respuesta.isConfirmed) return;
+
+    try {
+
+      await inmuebleService.rechazar(id);
+
+      Swal.fire(
+        "Correcto",
+        "Inmueble rechazado.",
+        "success"
+      );
+
+      cargarPendientes();
+
+    } catch (error) {
+
+      Swal.fire(
+        "Error",
+        error.response?.data?.message || "No se pudo rechazar.",
+        "error"
+      );
+
+    }
 
   };
 
   return (
+
     <>
       <Navbar />
 
@@ -55,11 +135,17 @@ export default function ValidarInmuebles() {
               <thead className="table-light">
 
                 <tr>
+
                   <th>ID</th>
+
                   <th>Inmueble</th>
+
                   <th>Propietario</th>
+
                   <th>Estado</th>
+
                   <th>Acciones</th>
+
                 </tr>
 
               </thead>
@@ -77,23 +163,27 @@ export default function ValidarInmuebles() {
                     <td>{item.propietario}</td>
 
                     <td>
+
                       <span className="badge bg-warning text-dark">
+
                         {item.estado}
+
                       </span>
+
                     </td>
 
                     <td>
 
                       <button
                         className="btn btn-success btn-sm me-2"
-                        onClick={aprobar}
+                        onClick={() => aprobar(item.id)}
                       >
                         Aprobar
                       </button>
 
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={rechazar}
+                        onClick={() => rechazar(item.id)}
                       >
                         Rechazar
                       </button>
@@ -113,6 +203,9 @@ export default function ValidarInmuebles() {
         </div>
 
       </div>
+
     </>
+
   );
+
 }

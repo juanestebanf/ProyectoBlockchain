@@ -1,6 +1,92 @@
 import Navbar from "../../components/Navbar";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+
+import inmuebleService from "../../services/inmuebleService";
+import contratoService from "../../services/contratoService";
+import pagoService from "../../services/pagoService";
+import api from "../../services/api";
 
 export default function DashboardUsuario() {
+
+  const [estadisticas, setEstadisticas] = useState({
+    inmuebles: 0,
+    contratos: 0,
+    pagos: 0,
+    eventos: 0
+  });
+
+  useEffect(() => {
+    cargarDashboard();
+  }, []);
+
+  const cargarDashboard = async () => {
+
+    try {
+
+      const [
+        inmueblesRes,
+        contratosRes,
+        pagosRes
+      ] = await Promise.all([
+        inmuebleService.listarMisInmuebles(),
+        contratoService.listarMisContratos(),
+        pagoService.listarMisPagos()
+      ]);
+
+      const inmuebles = inmueblesRes.data.data;
+
+      const contratos = contratosRes.data.data;
+
+      const pagos = pagosRes.data.data;
+
+      const activos = contratos.filter(
+        c => c.estado === "ACTIVO"
+      );
+
+      let totalEventos = 0;
+
+      for (const contrato of contratos) {
+
+        try {
+
+          const { data } = await api.get(
+            `/blockchain/contrato/${contrato.id}`
+          );
+
+          totalEventos += data.data.length;
+
+        } catch (e) {
+          console.error(e);
+        }
+
+      }
+
+      setEstadisticas({
+
+        inmuebles: inmuebles.length,
+
+        contratos: activos.length,
+
+        pagos: pagos.length,
+
+        eventos: totalEventos
+
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      Swal.fire(
+        "Error",
+        "No fue posible cargar el dashboard.",
+        "error"
+      );
+
+    }
+
+  };
 
   return (
     <>
@@ -9,7 +95,7 @@ export default function DashboardUsuario() {
       <div className="container mt-5">
 
         <h2 className="fw-bold mb-4">
-          Dashboard SmartRentChain
+          Dashboard SmartRent
         </h2>
 
         <div className="row">
@@ -22,7 +108,9 @@ export default function DashboardUsuario() {
                 style={{ fontSize: "2rem" }}
               ></i>
 
-              <h3 className="mt-3">3</h3>
+              <h3 className="mt-3">
+                {estadisticas.inmuebles}
+              </h3>
 
               <p className="text-muted">
                 Mis Inmuebles
@@ -39,7 +127,9 @@ export default function DashboardUsuario() {
                 style={{ fontSize: "2rem" }}
               ></i>
 
-              <h3 className="mt-3">2</h3>
+              <h3 className="mt-3">
+                {estadisticas.contratos}
+              </h3>
 
               <p className="text-muted">
                 Contratos Activos
@@ -56,7 +146,9 @@ export default function DashboardUsuario() {
                 style={{ fontSize: "2rem" }}
               ></i>
 
-              <h3 className="mt-3">8</h3>
+              <h3 className="mt-3">
+                {estadisticas.pagos}
+              </h3>
 
               <p className="text-muted">
                 Pagos Registrados
@@ -73,7 +165,9 @@ export default function DashboardUsuario() {
                 style={{ fontSize: "2rem" }}
               ></i>
 
-              <h3 className="mt-3">12</h3>
+              <h3 className="mt-3">
+                {estadisticas.eventos}
+              </h3>
 
               <p className="text-muted">
                 Eventos Blockchain
@@ -87,4 +181,5 @@ export default function DashboardUsuario() {
       </div>
     </>
   );
+
 }

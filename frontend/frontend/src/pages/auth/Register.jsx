@@ -1,6 +1,6 @@
-// src/pages/auth/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import authService from "../../services/authService";
 import Swal from 'sweetalert2';
 
 export default function Register() {
@@ -10,34 +10,55 @@ export default function Register() {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [rol, setRol] = useState('usuario'); // Por defecto 'usuario' (Cliente/Propietario)
+  const [rol, setRol] = useState('usuario'); // Por defecto 'usuario'
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación básica de campos vacíos
     if (!nombre || !correo || !password || !rol) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Campos incompletos',
-        text: 'Por favor, llena todos los datos requeridos.',
-      });
+      Swal.fire(
+        "Campos incompletos",
+        "Complete todos los datos.",
+        "warning"
+      );
       return;
     }
 
-    // Simulación temporal de registro exitoso
-    Swal.fire({
-      icon: 'success',
-      title: '¡Registro Exitoso!',
-      text: 'Tu cuenta ha sido creada correctamente (Simulado).',
-      timer: 2000,
-      showConfirmButton: false
-    });
+    try {
+      const { data } = await authService.register({
+        nombre,
+        correo,
+        password,
+        rol: rol.toUpperCase()
+      });
 
-    // Redirigir al login después del registro
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("usuario", JSON.stringify(data.data.usuario));
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Bienvenido!",
+        text: "Tu cuenta ha sido creada correctamente.",
+        timer: 1200,
+        showConfirmButton: false
+      });
+
+      setTimeout(() => {
+        if (data.data.usuario.rol === "ADMIN") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      }, 1200);
+
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error.response?.data?.message ||
+        "No fue posible registrar el usuario.",
+        "error"
+      );
+    }
   };
 
   return (
@@ -95,7 +116,7 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Campo Selección de Rol (Solo Usuario y Admin) */}
+          {/* Campo Selección de Rol */}
           <div className="mb-4">
             <label className="form-label fw-semibold">Tipo de Usuario (Rol)</label>
             <div className="input-group">

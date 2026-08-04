@@ -1,31 +1,51 @@
 import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+
+import inmuebleService from "../../services/inmuebleService";
 
 export default function ExplorarInmuebles() {
 
-  const inmuebles = [
-    {
-      id: 1,
-      titulo: "Suite Ejecutiva",
-      ubicacion: "Quito",
-      precio: 450,
-      tipo: "ALQUILER"
-    },
-    {
-      id: 2,
-      titulo: "Casa Moderna",
-      ubicacion: "Loja",
-      precio: 650,
-      tipo: "ALQUILER"
-    },
-    {
-      id: 3,
-      titulo: "Terreno Comercial",
-      ubicacion: "Cuenca",
-      precio: 20000,
-      tipo: "VENTA"
+  const [inmuebles, setInmuebles] = useState([]);
+
+  useEffect(() => {
+
+    cargarInmuebles();
+
+  }, []);
+
+  const cargarInmuebles = async () => {
+
+    try {
+
+      const { data } =
+        await inmuebleService.listar();
+
+      setInmuebles(
+
+          data.data.filter(
+
+              inmueble =>
+                  inmueble.estado_disponibilidad === "DISPONIBLE"
+
+          )
+
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      Swal.fire(
+        "Error",
+        "No se pudieron cargar los inmuebles.",
+        "error"
+      );
+
     }
-  ];
+
+  };
 
   return (
     <>
@@ -39,64 +59,94 @@ export default function ExplorarInmuebles() {
 
         <div className="row">
 
-          {inmuebles.map((item) => (
+          {inmuebles.length === 0 ? (
 
-            <div
-              className="col-md-4 mb-4"
-              key={item.id}
-            >
+            <div className="col-12">
 
-              <div className="card shadow-sm border-0 h-100">
+              <div className="alert alert-info">
 
-                <div className="bg-secondary text-white text-center py-5">
-
-                  <i
-                    className="bi bi-house-door-fill"
-                    style={{ fontSize: "2rem" }}
-                  ></i>
-
-                </div>
-
-                <div className="card-body">
-
-                  <h5 className="fw-bold">
-                    {item.titulo}
-                  </h5>
-
-                  <p className="text-muted">
-                    <i className="bi bi-geo-alt"></i>
-                    {" "}
-                    {item.ubicacion}
-                  </p>
-
-                  <p>
-                    <span className="badge bg-primary">
-                      {item.tipo}
-                    </span>
-                  </p>
-
-                  <h4 className="text-success">
-                    ${item.precio}
-                  </h4>
-
-                  <Link
-                    to="/detalle-inmueble"
-                    className="btn btn-primary w-100 mt-2"
-                  >
-                    Ver Detalle
-                  </Link>
-
-                </div>
+                No existen inmuebles disponibles.
 
               </div>
 
             </div>
 
-          ))}
+          ) : (
+
+            inmuebles.map((item) => (
+
+              <div
+                className="col-md-4 mb-4"
+                key={item.id}
+              >
+
+                <div className="card shadow-sm border-0 h-100">
+
+                  <img
+                    src={
+                        item.foto_principal
+                            ? `http://localhost:5000/uploads/${item.foto_principal}`
+                            : "https://placehold.co/600x400?text=Sin+Imagen"
+                    }
+                    alt={item.titulo}
+                    className="card-img-top"
+                    style={{
+                        height: "220px",
+                        objectFit: "cover"
+                    }}
+                />
+
+                  <div className="card-body">
+
+                    <h5 className="fw-bold">
+                      {item.titulo}
+                    </h5>
+
+                    <p className="text-muted">
+
+                      <i className="bi bi-geo-alt"></i>{" "}
+
+                      {item.direccion}
+
+                    </p>
+
+                    <p>
+
+                      <span className="badge bg-primary">
+
+                        {item.tipo_operacion}
+
+                      </span>
+
+                    </p>
+
+                    <h4 className="text-success">
+
+                      ${item.precio}
+
+                    </h4>
+
+                    <Link
+                      to={`/detalle-inmueble/${item.id}`}
+                      className="btn btn-primary w-100 mt-2"
+                  >
+                      Ver Detalle
+                  </Link>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            ))
+
+          )}
 
         </div>
 
       </div>
     </>
   );
+
 }

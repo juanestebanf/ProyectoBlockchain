@@ -1,146 +1,288 @@
 import Navbar from "../../components/Navbar";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+
+import contratoService from "../../services/contratoService";
+import blockchainService from "../../services/blockchainService";
 
 export default function HistorialBlockchain() {
 
-  const eventos = [
-    {
-      id: 1,
-      evento: "Contrato Creado",
-      bloque: 12,
-      hash: "0xA871B9...",
-      fecha: "2026-07-01 09:15"
-    },
-    {
-      id: 2,
-      evento: "Pago Registrado",
-      bloque: 15,
-      hash: "0x9D22FF...",
-      fecha: "2026-08-01 08:00"
-    },
-    {
-      id: 3,
-      evento: "Pago Confirmado",
-      bloque: 16,
-      hash: "0x7A11BC...",
-      fecha: "2026-08-01 08:02"
-    },
-    {
-      id: 4,
-      evento: "Contrato Finalizado",
-      bloque: 20,
-      hash: "0xF9DD22...",
-      fecha: "2027-07-01 12:00"
-    }
-  ];
+    const [contratos, setContratos] = useState([]);
+    const [eventos, setEventos] = useState([]);
+    const [contratoSeleccionado, setContratoSeleccionado] = useState("");
 
-  return (
-    <>
-      <Navbar />
+    useEffect(() => {
 
-      <div className="container mt-4">
+        cargarContratos();
 
-        <h2 className="fw-bold mb-2">
-          Historial Blockchain
-        </h2>
+    }, []);
 
-        <p className="text-muted">
-          Trazabilidad completa de eventos registrados en Blockchain.
-        </p>
+    const cargarContratos = async () => {
 
-        <div className="card shadow-sm border-0">
+        try {
 
-          <div className="card-body">
+            const { data } =
+                await contratoService.listarMisContratos();
 
-            <table className="table table-hover align-middle">
+            setContratos(data.data);
 
-              <thead className="table-light">
+        } catch (error) {
 
-                <tr>
-                  <th>Evento</th>
-                  <th>Bloque</th>
-                  <th>Hash</th>
-                  <th>Fecha</th>
-                </tr>
+            console.error(error);
 
-              </thead>
+            Swal.fire(
+                "Error",
+                "No se pudieron cargar los contratos.",
+                "error"
+            );
 
-              <tbody>
+        }
 
-                {eventos.map((evento) => (
+    };
 
-                  <tr key={evento.id}>
+    const cargarEventos = async (idContrato) => {
 
-                    <td>
+        try {
 
-                      <span className="fw-semibold">
-                        {evento.evento}
-                      </span>
+            const { data } =
+                await blockchainService.listarPorContrato(idContrato);
 
-                    </td>
+            setEventos(data.data);
 
-                    <td>
+        } catch (error) {
 
-                      <span className="badge bg-primary">
-                        #{evento.bloque}
-                      </span>
+            console.error(error);
 
-                    </td>
+            Swal.fire(
+                "Error",
+                "No se pudo obtener el historial Blockchain.",
+                "error"
+            );
 
-                    <td className="small text-muted font-monospace">
-                      {evento.hash}
-                    </td>
+        }
 
-                    <td>{evento.fecha}</td>
+    };
 
-                  </tr>
+    const seleccionarContrato = async (e) => {
 
-                ))}
+        const id = e.target.value;
 
-              </tbody>
+        setContratoSeleccionado(id);
 
-            </table>
+        if (id) {
 
-          </div>
+            cargarEventos(id);
 
-        </div>
+        } else {
 
-        <div className="card shadow-sm border-0 mt-4">
+            setEventos([]);
 
-          <div className="card-body">
+        }
 
-            <h5 className="fw-bold mb-3">
-              Resumen Blockchain
-            </h5>
+    };
 
-            <div className="row text-center">
+    return (
 
-              <div className="col-md-3">
-                <h3 className="text-primary">20</h3>
-                <p>Bloques</p>
-              </div>
+        <>
+            <Navbar />
 
-              <div className="col-md-3">
-                <h3 className="text-success">4</h3>
-                <p>Transacciones</p>
-              </div>
+            <div className="container mt-4">
 
-              <div className="col-md-3">
-                <h3 className="text-warning">1</h3>
-                <p>Contrato</p>
-              </div>
+                <h2 className="fw-bold mb-2">
+                    Historial Blockchain
+                </h2>
 
-              <div className="col-md-3">
-                <h3 className="text-danger">2</h3>
-                <p>Pagos</p>
-              </div>
+                <p className="text-muted">
+                    Consulte los eventos registrados para uno de sus contratos.
+                </p>
+
+                <div className="card shadow-sm border-0 mb-4">
+
+                    <div className="card-body">
+
+                        <label className="form-label">
+                            Contrato
+                        </label>
+
+                        <select
+                            className="form-select"
+                            value={contratoSeleccionado}
+                            onChange={seleccionarContrato}
+                        >
+
+                            <option value="">
+                                Seleccione un contrato
+                            </option>
+
+                            {contratos.map((contrato) => (
+
+                                <option
+                                    key={contrato.id}
+                                    value={contrato.id}
+                                >
+                                    #{contrato.id} - {contrato.titulo}
+                                </option>
+
+                            ))}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div className="card shadow-sm border-0">
+
+                    <div className="card-body">
+
+                        <table className="table table-hover align-middle">
+
+                            <thead className="table-light">
+
+                                <tr>
+                                    <th>Evento</th>
+                                    <th>Bloque</th>
+                                    <th>Hash</th>
+                                    <th>Fecha</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {eventos.length === 0 ? (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan="4"
+                                            className="text-center"
+                                        >
+
+                                            No existen eventos.
+
+                                        </td>
+
+                                    </tr>
+
+                                ) : (
+
+                                    eventos.map((evento) => (
+
+                                        <tr key={evento.id}>
+
+                                            <td>
+
+                                                <span className="fw-semibold">
+
+                                                    {evento.evento}
+
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+
+                                                <span className="badge bg-primary">
+
+                                                    #{evento.bloque}
+
+                                                </span>
+
+                                            </td>
+
+                                            <td
+                                                className="small text-muted font-monospace"
+                                            >
+
+                                                {evento.tx_hash}
+
+                                            </td>
+
+                                            <td>
+
+                                                {new Date(
+                                                    evento.fecha_evento
+                                                ).toLocaleString()}
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                {eventos.length > 0 && (
+
+                    <div className="card shadow-sm border-0 mt-4">
+
+                        <div className="card-body">
+
+                            <h5 className="fw-bold mb-3">
+                                Resumen
+                            </h5>
+
+                            <div className="row text-center">
+
+                                <div className="col-md-4">
+
+                                    <h3 className="text-primary">
+
+                                        {Math.max(
+                                            ...eventos.map(e => Number(e.bloque))
+                                        )}
+
+                                    </h3>
+
+                                    <p>Último bloque</p>
+
+                                </div>
+
+                                <div className="col-md-4">
+
+                                    <h3 className="text-success">
+
+                                        {eventos.length}
+
+                                    </h3>
+
+                                    <p>Eventos registrados</p>
+
+                                </div>
+
+                                <div className="col-md-4">
+
+                                    <h3 className="text-warning">
+
+                                        {contratoSeleccionado}
+
+                                    </h3>
+
+                                    <p>Contrato</p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )}
 
             </div>
 
-          </div>
+        </>
 
-        </div>
+    );
 
-      </div>
-    </>
-  );
 }

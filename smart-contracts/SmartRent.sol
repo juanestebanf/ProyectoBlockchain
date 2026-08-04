@@ -27,9 +27,17 @@ contract SmartRent {
         string tipoOperacion;
 
         EstadoContrato estado;
+
+        bool firmaPropietario;
+
+        bool firmaCliente;
     }
 
     mapping(uint256 => Contrato) public contratos;
+
+    // ===================================================
+    // EVENTOS
+    // ===================================================
 
     event ContratoCreado(
 
@@ -50,7 +58,11 @@ contract SmartRent {
 
     event ContratoFirmado(
 
-        uint256 indexed idContrato
+        uint256 indexed idContrato,
+
+        address firmante,
+
+        string tipoFirma
 
     );
 
@@ -67,6 +79,10 @@ contract SmartRent {
         uint256 indexed idContrato
 
     );
+
+    // ===================================================
+    // CREAR CONTRATO
+    // ===================================================
 
     function crearContrato(
 
@@ -110,7 +126,11 @@ contract SmartRent {
 
             tipoOperacion: _tipoOperacion,
 
-            estado: EstadoContrato.PENDIENTE_FIRMA
+            estado: EstadoContrato.PENDIENTE_FIRMA,
+
+            firmaPropietario: false,
+
+            firmaCliente: false
 
         });
 
@@ -131,9 +151,14 @@ contract SmartRent {
             _tipoOperacion
 
         );
+
     }
 
-    function firmarContrato(
+    // ===================================================
+    // FIRMA DEL PROPIETARIO
+    // ===================================================
+
+    function firmarPropietario(
 
         uint256 idContrato
 
@@ -147,10 +172,123 @@ contract SmartRent {
 
         );
 
-        contratos[idContrato].estado = EstadoContrato.ACTIVO;
+        require(
 
-        emit ContratoFirmado(idContrato);
+            contratos[idContrato].estado == EstadoContrato.PENDIENTE_FIRMA,
+
+            "El contrato ya no admite firmas."
+
+        );
+
+        require(
+
+            msg.sender == contratos[idContrato].propietario,
+
+            "Solo el propietario puede firmar."
+
+        );
+
+        require(
+
+            !contratos[idContrato].firmaPropietario,
+
+            "El propietario ya firmo."
+
+        );
+
+        contratos[idContrato].firmaPropietario = true;
+
+        emit ContratoFirmado(
+
+            idContrato,
+
+            msg.sender,
+
+            "PROPIETARIO"
+
+        );
+
+        if (
+
+            contratos[idContrato].firmaCliente
+
+        ) {
+
+            contratos[idContrato].estado = EstadoContrato.ACTIVO;
+
+        }
+
     }
+
+    // ===================================================
+    // FIRMA DEL CLIENTE
+    // ===================================================
+
+    function firmarCliente(
+
+        uint256 idContrato
+
+    ) public {
+
+        require(
+
+            contratos[idContrato].idContrato != 0,
+
+            "No existe."
+
+        );
+
+        require(
+
+            contratos[idContrato].estado == EstadoContrato.PENDIENTE_FIRMA,
+
+            "El contrato ya no admite firmas."
+
+        );
+
+        require(
+
+            msg.sender == contratos[idContrato].cliente,
+
+            "Solo el cliente puede firmar."
+
+        );
+
+        require(
+
+            !contratos[idContrato].firmaCliente,
+
+            "El cliente ya firmo."
+
+        );
+
+        contratos[idContrato].firmaCliente = true;
+
+        emit ContratoFirmado(
+
+            idContrato,
+
+            msg.sender,
+
+            "CLIENTE"
+
+        );
+
+        if (
+
+            contratos[idContrato].firmaPropietario
+
+        ) {
+
+            contratos[idContrato].estado = EstadoContrato.ACTIVO;
+
+        }
+
+    }
+
+    // ===================================================
+    // REGISTRAR PAGO
+    // ===================================================
 
     function registrarPago(
 
@@ -168,6 +306,21 @@ contract SmartRent {
 
         );
 
+        require(
+
+            contratos[idContrato].estado == EstadoContrato.ACTIVO,
+
+            "El contrato aun no esta activo."
+
+        );
+        require(
+
+            msg.sender == contratos[idContrato].cliente,
+
+            "Solo el cliente puede registrar pagos."
+
+        );
+
         emit PagoRegistrado(
 
             idContrato,
@@ -175,30 +328,54 @@ contract SmartRent {
             monto
 
         );
+
     }
 
-    function finalizarContrato(
+function finalizarContrato(
 
-        uint256 idContrato
+    uint256 idContrato
 
-    ) public {
+) public {
 
-        require(
+    require(
 
-            contratos[idContrato].idContrato != 0,
+        contratos[idContrato].idContrato != 0,
 
-            "No existe."
+        "No existe."
 
-        );
+    );
 
-        contratos[idContrato].estado = EstadoContrato.FINALIZADO;
+    require(
 
-        emit ContratoFinalizado(
+        contratos[idContrato].estado == EstadoContrato.ACTIVO,
 
-            idContrato
+        "Solo un contrato activo puede finalizarse."
 
-        );
-    }
+    );
+
+    require(
+
+        msg.sender == contratos[idContrato].propietario ||
+
+        msg.sender == contratos[idContrato].cliente,
+
+        "No autorizado."
+
+    );
+
+    contratos[idContrato].estado = EstadoContrato.FINALIZADO;
+
+    emit ContratoFinalizado(
+
+        idContrato
+
+    );
+
+}
+
+    // ===================================================
+    // CONSULTAR CONTRATO
+    // ===================================================
 
     function obtenerContrato(
 

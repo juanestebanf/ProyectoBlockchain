@@ -227,6 +227,33 @@ class InmuebleModel {
         return rows[0];
 
     }
+    async listarPendientes() {
+
+    const query = `
+
+        SELECT
+
+            i.*,
+
+            u.nombre AS propietario
+
+        FROM inmuebles i
+
+        INNER JOIN usuarios u
+
+            ON u.id = i.propietario_id
+
+        WHERE i.estado = 'PENDIENTE'
+
+        ORDER BY i.fecha_registro DESC;
+
+    `;
+
+    const { rows } = await db.query(query);
+
+    return rows;
+
+}
 
 }
 

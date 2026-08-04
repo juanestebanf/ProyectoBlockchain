@@ -51,6 +51,83 @@ const buscarPorId = async (id) => {
     return rows[0];
 
 };
+const listar = async () => {
+
+    const query = `
+
+        SELECT
+
+            id,
+            nombre,
+            correo,
+            rol,
+            estado,
+            fecha_registro
+
+        FROM usuarios
+
+        ORDER BY id;
+
+    `;
+
+    const { rows } = await db.query(query);
+
+    return rows;
+
+};
+
+const actualizar = async (id, datos) => {
+
+    const query = `
+
+        UPDATE usuarios
+
+        SET
+
+            nombre=$1,
+            correo=$2,
+            rol=$3
+
+        WHERE id=$4
+
+        RETURNING
+            id,
+            nombre,
+            correo,
+            rol,
+            estado;
+
+    `;
+
+    const values = [
+
+        datos.nombre,
+
+        datos.correo,
+
+        datos.rol,
+
+        id
+
+    ];
+
+    const { rows } = await db.query(query, values);
+
+    return rows[0];
+
+};
+
+const eliminar = async (id) => {
+
+    await db.query(
+
+        `DELETE FROM usuarios WHERE id=$1`,
+
+        [id]
+
+    );
+
+};
 
 module.exports = {
 
@@ -58,6 +135,12 @@ module.exports = {
 
     buscarPorCorreo,
 
-    buscarPorId
+    buscarPorId,
+    
+    listar,
+
+    actualizar,
+
+    eliminar
 
 };

@@ -5,6 +5,7 @@ const ContratoController = require("../controllers/contratoController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
 
+
 const { body, param } = require("express-validator");
 
 
@@ -43,6 +44,28 @@ router.get(
     authMiddleware,
     roleMiddleware("USUARIO", "ADMIN"),
     ContratoController.listarPorUsuario
+);
+// ================================
+// DESCARGAR PDF
+// ================================
+router.get(
+
+    "/:id/pdf",
+
+    authMiddleware,
+
+    roleMiddleware("USUARIO", "ADMIN"),
+
+    [
+
+        param("id")
+            .isInt()
+            .withMessage("ID inválido")
+
+    ],
+
+    ContratoController.descargarPDF
+
 );
 
 

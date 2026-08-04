@@ -1,5 +1,7 @@
 const inmuebleModel = require("../models/inmuebleModel");
 const AppError = require("../utils/AppError");
+const fs = require("fs");
+const path = require("path");
 
 class InmuebleService {
 
@@ -69,15 +71,29 @@ class InmuebleService {
                 400
             );
         }
+        if (
 
+            datos.foto_principal &&
+            inmueble.foto_principal &&
+            datos.foto_principal !== inmueble.foto_principal
+
+        ) {
+
+            const rutaImagen = path.join(
+                __dirname,
+                "..",
+                "uploads",
+                inmueble.foto_principal
+            );
+            if (fs.existsSync(rutaImagen)) {
+                fs.unlinkSync(rutaImagen);
+            }
+        }
         return await inmuebleModel.actualizar(id, datos);
-
     }
 
     async eliminar(id, usuarioId) {
-
         const inmueble = await inmuebleModel.buscarPorId(id);
-
         if (!inmueble) {
             throw new AppError(
                 "El inmueble no existe.",
@@ -99,7 +115,41 @@ class InmuebleService {
             );
         }
 
-        await inmuebleModel.eliminar(id);
+            if (inmueble.foto) {
+
+        const rutaImagen = path.join(
+            __dirname,
+            "..",
+            "uploads",
+            inmueble.foto
+        );
+
+        if (fs.existsSync(rutaImagen)) {
+
+            fs.unlinkSync(rutaImagen);
+
+        }
+
+    }
+
+        if (inmueble.foto_principal) {
+
+        const rutaImagen = path.join(
+            __dirname,
+            "..",
+            "uploads",
+            inmueble.foto_principal
+        );
+
+        if (fs.existsSync(rutaImagen)) {
+
+            fs.unlinkSync(rutaImagen);
+
+        }
+
+    }
+
+    await inmuebleModel.eliminar(id);
 
     }
 
@@ -127,6 +177,55 @@ class InmuebleService {
         );
 
     }
+    async listarPendientes() {
+
+    return await inmuebleModel.listarPendientes();
+
+}
+    async aprobar(id) {
+
+        const inmueble = await inmuebleModel.buscarPorId(id);
+
+        if (!inmueble) {
+
+            throw new AppError(
+                "Inmueble no encontrado.",
+                404
+            );
+
+        }
+
+        await inmuebleModel.actualizarEstado(
+            id,
+            "APROBADO"
+        );
+
+        return await inmuebleModel.actualizarDisponibilidad(
+            id,
+            "DISPONIBLE"
+        );
+
+    }
+    async rechazar(id) {
+
+        const inmueble = await inmuebleModel.buscarPorId(id);
+
+        if (!inmueble) {
+
+            throw new AppError(
+                "Inmueble no encontrado.",
+                404
+            );
+
+        }
+
+        return await inmuebleModel.actualizarEstado(
+            id,
+            "RECHAZADO"
+        );
+
+    }
+
 
 }
 

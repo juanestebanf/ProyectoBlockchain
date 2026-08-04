@@ -1,90 +1,157 @@
 import Navbar from "../../components/Navbar";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+
+import contratoService from "../../services/contratoService";
 
 export default function ContratosActivos() {
 
-  const contratos = [
-    {
-      id: 1,
-      inmueble: "Suite Ejecutiva",
-      propietario: "Juan Pérez",
-      cliente: "Carlos Ruiz",
-      monto: 450,
-      estado: "ACTIVO"
-    },
-    {
-      id: 2,
-      inmueble: "Casa Moderna",
-      propietario: "María López",
-      cliente: "Pedro Sánchez",
-      monto: 600,
-      estado: "ACTIVO"
-    }
-  ];
+    const [contratos, setContratos] = useState([]);
 
-  return (
-    <>
-      <Navbar />
+    useEffect(() => {
+        cargarContratos();
+    }, []);
 
-      <div className="container mt-4">
+    const cargarContratos = async () => {
 
-        <h2 className="fw-bold mb-4">
-          Contratos Activos
-        </h2>
+        try {
 
-        <div className="card shadow-sm border-0">
+            const { data } =
+                await contratoService.listarTodos();
 
-          <div className="card-body">
+            setContratos(data.data);
 
-            <table className="table table-hover">
+        } catch (error) {
 
-              <thead className="table-light">
+            console.error(error);
 
-                <tr>
-                  <th>ID</th>
-                  <th>Inmueble</th>
-                  <th>Propietario</th>
-                  <th>Cliente</th>
-                  <th>Monto</th>
-                  <th>Estado</th>
-                </tr>
+            Swal.fire(
+                "Error",
+                "No fue posible cargar los contratos.",
+                "error"
+            );
 
-              </thead>
+        }
 
-              <tbody>
+    };
 
-                {contratos.map((contrato) => (
+    return (
+        <>
+            <Navbar />
 
-                  <tr key={contrato.id}>
+            <div className="container mt-4">
 
-                    <td>#{contrato.id}</td>
+                <h2 className="fw-bold mb-4">
+                    Contratos Activos
+                </h2>
 
-                    <td>{contrato.inmueble}</td>
+                <div className="card shadow-sm border-0">
 
-                    <td>{contrato.propietario}</td>
+                    <div className="card-body">
 
-                    <td>{contrato.cliente}</td>
+                        <table className="table table-hover align-middle">
 
-                    <td>${contrato.monto}</td>
+                            <thead className="table-light">
 
-                    <td>
-                      <span className="badge bg-success">
-                        {contrato.estado}
-                      </span>
-                    </td>
+                                <tr>
 
-                  </tr>
+                                    <th>ID</th>
 
-                ))}
+                                    <th>Inmueble</th>
 
-              </tbody>
+                                    <th>Propietario</th>
 
-            </table>
+                                    <th>Cliente</th>
 
-          </div>
+                                    <th>Monto</th>
 
-        </div>
+                                    <th>Estado</th>
 
-      </div>
-    </>
-  );
+                                    <th>Blockchain</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {contratos.map((contrato) => (
+
+                                    <tr key={contrato.id}>
+
+                                        <td>
+                                            #{contrato.id}
+                                        </td>
+
+                                        <td>
+                                            {contrato.titulo}
+                                        </td>
+
+                                        <td>
+                                            {contrato.propietario}
+                                        </td>
+
+                                        <td>
+                                            {contrato.cliente}
+                                        </td>
+
+                                        <td>
+                                            ${contrato.monto}
+                                        </td>
+
+                                        <td>
+
+                                            <span
+                                                className={`badge ${
+                                                    contrato.estado === "ACTIVO"
+                                                        ? "bg-success"
+                                                        : contrato.estado === "FINALIZADO"
+                                                        ? "bg-secondary"
+                                                        : "bg-warning text-dark"
+                                                }`}
+                                            >
+                                                {contrato.estado}
+                                            </span>
+
+                                        </td>
+
+                                        <td>
+
+                                            {contrato.tx_hash ? (
+
+                                                <span className="text-success">
+
+                                                    ✓ Registrado
+
+                                                </span>
+
+                                            ) : (
+
+                                                <span className="text-muted">
+
+                                                    Pendiente
+
+                                                </span>
+
+                                            )}
+
+                                        </td>
+
+                                    </tr>
+
+                                ))}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </>
+    );
+
 }

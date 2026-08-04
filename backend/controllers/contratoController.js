@@ -1,4 +1,5 @@
 const ContratoService = require("../services/contratoService");
+const pdfService = require("../services/pdfService");
 const { validationResult } = require("express-validator");
 const AppError = require("../utils/AppError");
 
@@ -325,6 +326,35 @@ async finalizarContrato(req, res, next) {
         } catch (error) {
             next(error);
         }
+    }
+    // =========================================
+    // DESCARGAR PDF DEL CONTRATO
+    // =========================================
+
+    async descargarPDF(req, res, next) {
+
+        try {
+
+            const contrato = await ContratoService.obtenerPorId(
+
+                req.params.id
+
+            );
+
+            pdfService.generarContrato(
+
+                contrato,
+
+                res
+
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
     }
 }
 
