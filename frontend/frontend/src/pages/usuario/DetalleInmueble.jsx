@@ -231,7 +231,7 @@ export default function DetalleInmueble() {
                                                             className={`carousel-item h-100 ${index === 0 ? "active" : ""}`}
                                                         >
                                                             <img
-                                                                src={`http://localhost:5000/uploads/${img}`}
+                                                                src={`https://proyectoblockchain.onrender.com/uploads/${img}`}
                                                                 className="d-block w-100 h-100"
                                                                 alt={`Imagen ${index + 1}`}
                                                                 style={{
