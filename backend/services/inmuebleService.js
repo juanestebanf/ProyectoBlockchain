@@ -1,5 +1,5 @@
 const inmuebleModel = require("../models/inmuebleModel");
-const imagenInmuebleModel = require("../models/imagenInmuebleModel");
+const imagenInmuebleModel = require("../models/ImagenInmuebleModel");
 const AppError = require("../utils/AppError");
 const fs = require("fs");
 const path = require("path");
