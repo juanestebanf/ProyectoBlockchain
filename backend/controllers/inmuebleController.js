@@ -8,9 +8,14 @@ class InmuebleController {
             const datos = {
                 ...req.body,
                 propietario_id: req.usuario.id,
-                foto_principal: req.file
-                    ? req.file.filename
-                    : null
+
+                foto_principal:
+                    req.files && req.files.length > 0
+                        ? req.files[0].filename
+                        : null,
+
+                imagenes:
+                    req.files || []
             };
 
             const inmueble = await inmuebleService.crear(datos);
@@ -25,11 +30,52 @@ class InmuebleController {
             next(error);
         }
     }
+    async agregarImagen(req, res, next) {
+
+        try {
+
+            const imagen = await inmuebleService.agregarImagen(
+
+                req.params.id,
+
+                req.usuario,
+
+                req.file?.filename
+
+            );
+
+            return success(
+
+                res,
+
+                "Imagen agregada correctamente.",
+
+                imagen,
+
+                201
+
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
 
     async listar(req, res, next) {
+
         try {
-            const inmuebles = await inmuebleService.listar();
-            return success(res, "Listado obtenido correctamente.", inmuebles);
+            const inmuebles =
+                await inmuebleService.listar(
+                    req.usuario.id
+                );
+            return success(
+                res,
+                "Listado obtenido correctamente.",
+                inmuebles
+            );
         } catch (error) {
             next(error);
         }

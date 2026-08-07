@@ -15,6 +15,7 @@ const validate = require("../validators/validate");
 
 router.get(
     "/",
+    authMiddleware,
     inmuebleController.listar
 );
 
@@ -53,10 +54,17 @@ router.post(
     "/",
     authMiddleware,
     roleMiddleware("ADMIN", "USUARIO"),
-    upload.single("foto"),
+    upload.array("imagenes", 10),
     inmuebleValidator,
     validate,
     inmuebleController.crear
+);
+router.post(
+    "/:id/imagenes",
+    authMiddleware,
+    roleMiddleware("ADMIN", "USUARIO"),
+    upload.single("foto"),
+    inmuebleController.agregarImagen
 );
 
 router.put(
@@ -64,7 +72,7 @@ router.put(
     "/:id",
     authMiddleware,
     roleMiddleware("ADMIN", "USUARIO"),
-    upload.single("foto"),
+    upload.array("imagenes", 10),
     inmuebleValidator,
     validate,
     inmuebleController.actualizar

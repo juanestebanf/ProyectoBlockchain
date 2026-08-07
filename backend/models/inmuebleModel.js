@@ -47,22 +47,18 @@ class InmuebleModel {
 
     }
 
-    async listar() {
+    async listar(usuarioId) {
 
         const query = `
-
             SELECT *
-
             FROM inmuebles
-
+            WHERE propietario_id <> $1
             ORDER BY fecha_registro DESC;
-
         `;
 
-        const { rows } = await db.query(query);
-
+        const { rows } =
+            await db.query(query, [usuarioId]);
         return rows;
-
     }
 
     async listarPorPropietario(propietarioId) {
@@ -89,11 +85,23 @@ class InmuebleModel {
 
         const query = `
 
-            SELECT *
+            SELECT
 
-            FROM inmuebles
+                i.*,
 
-            WHERE id=$1;
+                u.nombre AS propietario_nombre,
+
+                u.correo AS propietario_correo,
+
+                u.fecha_registro AS propietario_desde
+
+            FROM inmuebles i
+
+            INNER JOIN usuarios u
+
+                ON u.id = i.propietario_id
+
+            WHERE i.id = $1;
 
         `;
 

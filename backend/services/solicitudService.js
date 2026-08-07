@@ -65,9 +65,17 @@ class SolicitudService {
 
     }
 
-    async listarRecibidas(propietarioId) {
+    async listarRecibidas(usuario) {
 
-        return await solicitudModel.listarRecibidas(propietarioId);
+        if (usuario.rol === "ADMIN") {
+
+            return await solicitudModel.listarTodas();
+
+        }
+
+        return await solicitudModel.listarRecibidas(
+            usuario.id
+        );
 
     }
 

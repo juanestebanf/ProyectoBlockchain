@@ -78,7 +78,7 @@ class ContratoService {
 
                 monto: solicitud.precio,
 
-                fecha_inicio: null,
+                fecha_inicio: new Date(),
 
                 fecha_fin: null,
 
@@ -182,25 +182,25 @@ class ContratoService {
 
     }
     // =========================================
-    // =========================================
-    // FIRMA DEL PROPIETARIO
-    // =========================================
-    async firmarPropietario(idContrato, usuario) {
+// =========================================
+// FIRMA DEL PROPIETARIO
+// =========================================
+async firmarPropietario(idContrato, usuario) {
 
-        const contrato = await contratoModel.buscarPorId(
-            idContrato
+    const contrato = await contratoModel.buscarPorId(
+        idContrato
+    );
+
+    if (!contrato) {
+
+        throw new AppError(
+            "Contrato no encontrado.",
+            404
         );
 
-        if (!contrato) {
+    }
 
-            throw new AppError(
-                "Contrato no encontrado.",
-                404
-            );
-
-        }
-
-        // Solo el propietario o un administrador pueden firmar
+    // Solo el propietario o un administrador pueden firmar
     if (
 
         usuario.rol !== "ADMIN" &&
@@ -240,37 +240,66 @@ class ContratoService {
 
         );
 
-        // Actualizar último TX del contrato
-        await contratoModel.actualizarBlockchain(
+    // Actualizar TX
+    await contratoModel.actualizarBlockchain(
+        contrato.id,
+        blockchain.txHash
+    );
+
+    // Marcar que el propietario ya firmó
+    await contratoModel.marcarFirmaPropietario(
+        contrato.id
+    );
+
+    // Registrar evento
+    await blockchainService.registrarEvento({
+
+        contrato_id: contrato.id,
+
+        evento: "FIRMA_PROPIETARIO",
+
+        tx_hash: blockchain.txHash,
+
+        bloque: blockchain.bloque
+
+    });
+
+    // Revisar si ambas firmas existen
+    const contratoActualizado =
+        await contratoModel.buscarPorId(
+            contrato.id
+        );
+
+    if (
+
+        contratoActualizado.firma_propietario &&
+
+        contratoActualizado.firma_cliente
+
+    ) {
+
+        await contratoModel.actualizarEstado(
 
             contrato.id,
 
-            blockchain.txHash
+            "ACTIVO"
 
         );
 
-        // Guardar evidencia en blockchain_eventos
-        await blockchainService.registrarEvento({
-
-            contrato_id: contrato.id,
-
-            evento: "FIRMA_PROPIETARIO",
-
-            tx_hash: blockchain.txHash,
-
-            bloque: blockchain.bloque
-
-        });
-
-        return {
-
-            contrato,
-
-            blockchain
-
-        };
-
     }
+
+    return {
+
+        contrato:
+            await contratoModel.buscarPorId(
+                contrato.id
+            ),
+
+        blockchain
+
+    };
+
+}
 
     // =========================================
     // LISTAR TODOS LOS CONTRATOS
@@ -398,6 +427,15 @@ async firmarCliente(idContrato, usuario) {
 
         );
 
+    // Actualizar el último TX del contrato
+    await contratoModel.actualizarBlockchain(
+
+        contrato.id,
+
+        blockchain.txHash
+
+    );
+
     // Registrar evento en blockchain_eventos
     await blockchainService.registrarEvento({
 
@@ -411,14 +449,34 @@ async firmarCliente(idContrato, usuario) {
 
     });
 
-    // Actualizar estado del contrato
-    await contratoModel.actualizarEstado(
-
-        contrato.id,
-
-        "ACTIVO"
-
+    // Marcar que el cliente ya firmó
+    await contratoModel.marcarFirmaCliente(
+        contrato.id
     );
+
+    // Revisar si ambas firmas existen
+    const contratoActualizado =
+        await contratoModel.buscarPorId(
+            contrato.id
+        );
+
+    if (
+
+        contratoActualizado.firma_propietario &&
+
+        contratoActualizado.firma_cliente
+
+    ) {
+
+        await contratoModel.actualizarEstado(
+
+            contrato.id,
+
+            "ACTIVO"
+
+        );
+
+    }
 
     return {
 
@@ -500,12 +558,8 @@ async finalizarContrato(idContrato, usuario) {
 
         );
 
-    await contratoModel.actualizarEstado(
-
-        contrato.id,
-
-        "FINALIZADO"
-
+    await contratoModel.finalizarContrato(
+        contrato.id
     );
 
     await contratoModel.actualizarBlockchain(

@@ -256,6 +256,47 @@ class SolicitudModel {
     ]);
 
 }
+async listarTodas() {
+
+    const query = `
+
+        SELECT
+
+            s.*,
+
+            u.nombre AS cliente,
+
+            u.correo,
+
+            i.titulo,
+
+            i.direccion,
+
+            propietario.nombre AS propietario
+
+        FROM solicitudes s
+
+        INNER JOIN usuarios u
+
+            ON u.id = s.cliente_id
+
+        INNER JOIN inmuebles i
+
+            ON i.id = s.inmueble_id
+
+        INNER JOIN usuarios propietario
+
+            ON propietario.id = i.propietario_id
+
+        ORDER BY s.fecha_solicitud DESC;
+
+    `;
+
+    const { rows } = await db.query(query);
+
+    return rows;
+
+}
 
 }
 

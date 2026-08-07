@@ -50,8 +50,8 @@ class SolicitudController {
     async listarRecibidas(req, res, next) {
         try {
             const solicitudes = await solicitudService.listarRecibidas(
-                req.usuario.id
-            );
+                    req.usuario
+                );
 
             res.json({
                 ok: true,

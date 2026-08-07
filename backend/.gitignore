@@ -1,0 +1,6 @@
+# .gitignore
+node_modules/
+.env
+env.js
+.env.local
+.env.*.local

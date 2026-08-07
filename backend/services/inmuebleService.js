@@ -1,4 +1,5 @@
 const inmuebleModel = require("../models/inmuebleModel");
+const imagenInmuebleModel = require("../models/imagenInmuebleModel");
 const AppError = require("../utils/AppError");
 const fs = require("fs");
 const path = require("path");
@@ -16,13 +17,28 @@ class InmuebleService {
             );
         }
 
-        return await inmuebleModel.crear(datos);
+        const inmueble = await inmuebleModel.crear(datos);
+
+        if (datos.imagenes && datos.imagenes.length > 0) {
+
+            for (const imagen of datos.imagenes) {
+
+                await imagenInmuebleModel.crear(
+                    inmueble.id,
+                    imagen.filename
+                );
+
+            }
+
+        }
+
+        return inmueble;
 
     }
 
-    async listar() {
+    async listar(usuarioId) {
 
-        return await inmuebleModel.listar();
+        return await inmuebleModel.listar(usuarioId);
 
     }
 
@@ -37,11 +53,18 @@ class InmuebleService {
         const inmueble = await inmuebleModel.buscarPorId(id);
 
         if (!inmueble) {
+
             throw new AppError(
                 "El inmueble no existe.",
                 404
             );
+
         }
+
+        inmueble.imagenes =
+            await imagenInmuebleModel.listarPorInmueble(
+                inmueble.id
+            );
 
         return inmueble;
 
@@ -71,6 +94,7 @@ class InmuebleService {
                 400
             );
         }
+
         if (
 
             datos.foto_principal &&
@@ -89,6 +113,7 @@ class InmuebleService {
                 fs.unlinkSync(rutaImagen);
             }
         }
+        
         return await inmuebleModel.actualizar(id, datos);
     }
 
@@ -115,41 +140,41 @@ class InmuebleService {
             );
         }
 
-            if (inmueble.foto) {
+        if (inmueble.foto) {
 
-        const rutaImagen = path.join(
-            __dirname,
-            "..",
-            "uploads",
-            inmueble.foto
-        );
+            const rutaImagen = path.join(
+                __dirname,
+                "..",
+                "uploads",
+                inmueble.foto
+            );
 
-        if (fs.existsSync(rutaImagen)) {
+            if (fs.existsSync(rutaImagen)) {
 
-            fs.unlinkSync(rutaImagen);
+                fs.unlinkSync(rutaImagen);
+
+            }
 
         }
-
-    }
 
         if (inmueble.foto_principal) {
 
-        const rutaImagen = path.join(
-            __dirname,
-            "..",
-            "uploads",
-            inmueble.foto_principal
-        );
+            const rutaImagen = path.join(
+                __dirname,
+                "..",
+                "uploads",
+                inmueble.foto_principal
+            );
 
-        if (fs.existsSync(rutaImagen)) {
+            if (fs.existsSync(rutaImagen)) {
 
-            fs.unlinkSync(rutaImagen);
+                fs.unlinkSync(rutaImagen);
+
+            }
 
         }
 
-    }
-
-    await inmuebleModel.eliminar(id);
+        await inmuebleModel.eliminar(id);
 
     }
 
@@ -177,11 +202,13 @@ class InmuebleService {
         );
 
     }
+    
     async listarPendientes() {
 
-    return await inmuebleModel.listarPendientes();
+        return await inmuebleModel.listarPendientes();
 
-}
+    }
+    
     async aprobar(id) {
 
         const inmueble = await inmuebleModel.buscarPorId(id);
@@ -206,6 +233,7 @@ class InmuebleService {
         );
 
     }
+    
     async rechazar(id) {
 
         const inmueble = await inmuebleModel.buscarPorId(id);
@@ -225,7 +253,51 @@ class InmuebleService {
         );
 
     }
+    async agregarImagen(id, usuario, nombreArchivo) {
 
+        const inmueble = await inmuebleModel.buscarPorId(id);
+
+        if (!inmueble) {
+
+            throw new AppError(
+                "El inmueble no existe.",
+                404
+            );
+
+        }
+
+        if (
+
+            usuario.rol !== "ADMIN" &&
+            Number(inmueble.propietario_id) !== Number(usuario.id)
+
+        ) {
+
+            throw new AppError(
+                "No tienes permisos para agregar imágenes.",
+                403
+            );
+
+        }
+
+        if (!nombreArchivo) {
+
+            throw new AppError(
+                "Debe seleccionar una imagen.",
+                400
+            );
+
+        }
+
+        return await imagenInmuebleModel.crear(
+
+            inmueble.id,
+
+            nombreArchivo
+
+        );
+
+    }
 
 }
 

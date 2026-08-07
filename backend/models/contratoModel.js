@@ -409,6 +409,130 @@ class ContratoModel {
     return rows[0];
 
 }
+async marcarFirmaPropietario(id) {
+
+    const query = `
+        UPDATE contratos
+        SET
+            firma_propietario = TRUE,
+            fecha_actualizacion = NOW()
+        WHERE id = $1
+        RETURNING *;
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+}
+async marcarFirmaCliente(id) {
+
+    const query = `
+        UPDATE contratos
+        SET
+            firma_cliente = TRUE,
+            fecha_actualizacion = NOW()
+        WHERE id = $1
+        RETURNING *;
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+}
+async marcarFirmaPropietario(id) {
+
+    const query = `
+
+        UPDATE contratos
+
+        SET
+
+            firma_propietario = TRUE,
+
+            fecha_actualizacion = NOW()
+
+        WHERE id = $1
+
+        RETURNING *;
+
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+
+}
+
+async marcarFirmaCliente(id) {
+
+    const query = `
+
+        UPDATE contratos
+
+        SET
+
+            firma_cliente = TRUE,
+
+            fecha_actualizacion = NOW()
+
+        WHERE id = $1
+
+        RETURNING *;
+
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+
+}
+
+async ambasFirmas(id) {
+
+    const query = `
+
+        SELECT
+
+            firma_propietario,
+
+            firma_cliente
+
+        FROM contratos
+
+        WHERE id = $1;
+
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+
+}
+async finalizarContrato(id) {
+
+    const query = `
+
+        UPDATE contratos
+
+        SET
+
+            estado = 'FINALIZADO',
+
+            fecha_fin = CURRENT_DATE,
+
+            fecha_actualizacion = NOW()
+
+        WHERE id = $1
+
+        RETURNING *;
+
+    `;
+
+    const { rows } = await db.query(query, [id]);
+
+    return rows[0];
+
+}
 
 }
 
