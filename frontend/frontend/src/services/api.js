@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
 
-    baseURL: "https://interval-satellite-wheel-thu.trycloudflare.com/api"
+    baseURL: "https://statistical-healthcare-besides-sharing.trycloudflare.com"
 
 });
 
