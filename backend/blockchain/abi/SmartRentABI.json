@@ -1,0 +1,343 @@
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "idInmueble",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "tituloInmueble",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "propietario",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "cliente",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "monto",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "tipoOperacion",
+				"type": "string"
+			}
+		],
+		"name": "ContratoCreado",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			}
+		],
+		"name": "ContratoFinalizado",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "firmante",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "tipoFirma",
+				"type": "string"
+			}
+		],
+		"name": "ContratoFirmado",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_idContrato",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idInmueble",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_titulo",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "_propietario",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_cliente",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_monto",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_tipoOperacion",
+				"type": "string"
+			}
+		],
+		"name": "crearContrato",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			}
+		],
+		"name": "finalizarContrato",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			}
+		],
+		"name": "firmarCliente",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			}
+		],
+		"name": "firmarPropietario",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "monto",
+				"type": "uint256"
+			}
+		],
+		"name": "PagoRegistrado",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "monto",
+				"type": "uint256"
+			}
+		],
+		"name": "registrarPago",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "contratos",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "idInmueble",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tituloInmueble",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "propietario",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "cliente",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "monto",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tipoOperacion",
+				"type": "string"
+			},
+			{
+				"internalType": "enum SmartRent.EstadoContrato",
+				"name": "estado",
+				"type": "uint8"
+			},
+			{
+				"internalType": "bool",
+				"name": "firmaPropietario",
+				"type": "bool"
+			},
+			{
+				"internalType": "bool",
+				"name": "firmaCliente",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "idContrato",
+				"type": "uint256"
+			}
+		],
+		"name": "obtenerContrato",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "idContrato",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "idInmueble",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "tituloInmueble",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "propietario",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "cliente",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "monto",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "tipoOperacion",
+						"type": "string"
+					},
+					{
+						"internalType": "enum SmartRent.EstadoContrato",
+						"name": "estado",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "firmaPropietario",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "firmaCliente",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct SmartRent.Contrato",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
