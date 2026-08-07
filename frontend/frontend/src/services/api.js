@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
 
-    baseURL: "https://proyectoblockchain.onrender.com/api"
+    baseURL: "https://interval-satellite-wheel-thu.trycloudflare.com/api"
 
 });
 
