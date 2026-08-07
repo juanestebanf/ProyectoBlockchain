@@ -287,7 +287,7 @@ export default function ExplorarInmuebles() {
                     <img
                       src={
                         item.foto_principal
-                          ? `http://localhost:5000/uploads/${item.foto_principal}`
+                          ? `https://proyectoblockchain.onrender.com/uploads/${item.foto_principal}`
                           : "https://placehold.co/600x400/E5E8EC/5A6A7A?text=Sin+Imagen"
                       }
                       alt={item.titulo}
