@@ -220,26 +220,26 @@ async firmarPropietario(idContrato, usuario) {
     const usuarioBD = await usuarioModel.buscarPorId(
         usuario.id
     );
-    const { ethers } = require("ethers");
-
-const wallet = new ethers.Wallet(
-    usuarioBD.private_key
-);
-
-console.log("=================================");
-console.log("Usuario:", usuarioBD.nombre);
-console.log("Wallet BD:", usuarioBD.wallet_address);
-console.log("Wallet derivada:", wallet.address);
-console.log("=================================");
-
     if (!usuarioBD.private_key) {
 
-        throw new AppError(
-            "El usuario no tiene una wallet configurada.",
-            400
+    throw new AppError(
+        "El usuario no tiene una wallet configurada.",
+        400
+    );
+
+        }
+
+        const { ethers } = require("ethers");
+
+        const wallet = new ethers.Wallet(
+            usuarioBD.private_key
         );
 
-    }
+        console.log("=================================");
+        console.log("Usuario:", usuarioBD.nombre);
+        console.log("Wallet BD:", usuarioBD.wallet);
+        console.log("Wallet derivada:", wallet.address);
+        console.log("=================================");
 
     // Firmar en blockchain usando SU wallet
     const blockchain =
@@ -419,26 +419,26 @@ async firmarCliente(idContrato, usuario) {
             usuario.id
         );
 
+        if (!usuarioBD.private_key) {
+
+            throw new AppError(
+                "El usuario no tiene una wallet configurada.",
+                400
+            );
+
+        }
+
         const { ethers } = require("ethers");
 
-const wallet = new ethers.Wallet(
-    usuarioBD.private_key
-);
-
-console.log("=================================");
-console.log("Usuario:", usuarioBD.nombre);
-console.log("Wallet BD:", usuarioBD.wallet_address);
-console.log("Wallet derivada:", wallet.address);
-console.log("=================================");
-
-    if (!usuarioBD.private_key) {
-
-        throw new AppError(
-            "El usuario no tiene una wallet configurada.",
-            400
+        const wallet = new ethers.Wallet(
+            usuarioBD.private_key
         );
 
-    }
+        console.log("=================================");
+        console.log("Usuario:", usuarioBD.nombre);
+        console.log("Wallet BD:", usuarioBD.wallet);
+        console.log("Wallet derivada:", wallet.address);
+        console.log("=================================");
 
     // Firmar usando la wallet del cliente
     const blockchain =

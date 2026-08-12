@@ -2,12 +2,12 @@ const db = require("../config/db");
 
 const crearUsuario = async (usuario) => {
 
-    const { nombre, correo, password, rol } = usuario;
+    const { nombre, correo, password, rol, wallet, private_key } = usuario;
 
     const query = `
         INSERT INTO usuarios
-        (nombre, correo, password, rol)
-        VALUES ($1,$2,$3,$4)
+        (nombre, correo, password, rol, wallet, private_key )
+        VALUES ($1,$2,$3,$4,$5,$6)
         RETURNING *
     `;
 
@@ -15,7 +15,9 @@ const crearUsuario = async (usuario) => {
         nombre,
         correo,
         password,
-        rol
+        rol,
+        wallet,
+        private_key
     ];
 
     const { rows } = await db.query(query, values);

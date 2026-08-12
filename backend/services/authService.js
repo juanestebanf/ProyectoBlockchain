@@ -2,6 +2,10 @@ const bcrypt = require("bcryptjs");
 const usuarioModel = require("../models/usuarioModel");
 const { generarToken } = require("../utils/jwt");
 const AppError = require("../utils/AppError");
+const {
+    generarWalletUsuario,
+    financiarWallet
+} = require("./walletService");
 
 class AuthService {
 
@@ -25,6 +29,13 @@ class AuthService {
 
         const passwordHash = await bcrypt.hash(password, 10);
 
+        // Generar wallet blockchain para el usuario
+        const wallet = generarWalletUsuario();
+
+        console.log("Wallet generada para usuario:");
+        console.log("Address:", wallet.address);
+
+        // Crear usuario junto con su wallet
         const nuevoUsuario = await usuarioModel.crearUsuario({
 
             nombre,
@@ -33,9 +44,33 @@ class AuthService {
 
             password: passwordHash,
 
-            rol
+            rol,
+
+            wallet: wallet.address,
+
+            private_key: wallet.privateKey
 
         });
+
+        // Financiar wallet del usuario con SepoliaETH
+        try {
+
+            const txHash = await financiarWallet(
+                wallet.address
+            );
+
+            console.log(
+                `Wallet financiada correctamente. TX: ${txHash}`
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Usuario creado, pero no se pudo financiar la wallet:",
+                error.message
+            );
+
+        }
 
         const token = generarToken(nuevoUsuario);
 
