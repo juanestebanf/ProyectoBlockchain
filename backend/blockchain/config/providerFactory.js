@@ -4,7 +4,7 @@ const { ethers } = require("ethers");
 const abi = require("../abi/SmartRentABI.json");
 
 const provider = new ethers.JsonRpcProvider(
-    "http://127.0.0.1:7545"
+    process.env.SEPOLIA_RPC_URL
 );
 
 function obtenerContrato(privateKey) {
@@ -15,19 +15,12 @@ function obtenerContrato(privateKey) {
     );
 
     return new ethers.Contract(
-
-        "0xfB81973d7F1CaE7B757cEfE0817d567bD4926284",
-
+        process.env.CONTRACT_ADDRESS,
         abi,
-
         wallet
-
     );
-
 }
 
 module.exports = {
-
     obtenerContrato
-
 };

@@ -220,6 +220,17 @@ async firmarPropietario(idContrato, usuario) {
     const usuarioBD = await usuarioModel.buscarPorId(
         usuario.id
     );
+    const { ethers } = require("ethers");
+
+const wallet = new ethers.Wallet(
+    usuarioBD.private_key
+);
+
+console.log("=================================");
+console.log("Usuario:", usuarioBD.nombre);
+console.log("Wallet BD:", usuarioBD.wallet_address);
+console.log("Wallet derivada:", wallet.address);
+console.log("=================================");
 
     if (!usuarioBD.private_key) {
 
@@ -407,6 +418,18 @@ async firmarCliente(idContrato, usuario) {
         await usuarioModel.buscarPorId(
             usuario.id
         );
+
+        const { ethers } = require("ethers");
+
+const wallet = new ethers.Wallet(
+    usuarioBD.private_key
+);
+
+console.log("=================================");
+console.log("Usuario:", usuarioBD.nombre);
+console.log("Wallet BD:", usuarioBD.wallet_address);
+console.log("Wallet derivada:", wallet.address);
+console.log("=================================");
 
     if (!usuarioBD.private_key) {
 
