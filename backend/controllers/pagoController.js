@@ -26,15 +26,15 @@ class PagoController {
 
             const pago = await pagoService.crear({
 
-                contrato_id: req.body.contrato_id,
+                    contrato_id: req.body.contrato_id,
 
-                monto: req.body.monto,
+                    monto: req.body.monto,
 
-                metodo_pago: req.body.metodo_pago,
+                    metodo_pago: req.body.metodo_pago,
 
-                referencia: req.body.referencia
+                    referencia: req.body.referencia
 
-            });
+                }, req.usuario);
 
             res.status(201).json({
 

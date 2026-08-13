@@ -12,7 +12,7 @@ class PagoService {
     // CREAR PAGO
     // =====================================
 
-    async crear(datos) {
+        async crear(datos, usuario) {
 
         const contrato = await ContratoModel.buscarPorId(
             datos.contrato_id
@@ -35,6 +35,20 @@ class PagoService {
             );
 
         }
+
+        // Solo el cliente del contrato puede iniciar el pago
+        if (
+            usuario.rol !== "ADMIN" &&
+            Number(contrato.cliente_id) !== Number(usuario.id)
+        ) {
+
+            throw new AppError(
+                "Solo el cliente del contrato puede registrar el pago.",
+                403
+            );
+
+        }
+
         const pagoPendiente =
             await PagoModel.buscarPendientePorContrato(
                 datos.contrato_id
