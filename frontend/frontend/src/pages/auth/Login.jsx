@@ -11,6 +11,7 @@ export default function Login() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false); // 👈 NUEVO
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -60,6 +61,11 @@ export default function Login() {
     } finally {
       setCargando(false);
     }
+  };
+
+  // 👈 NUEVA FUNCIÓN PARA ALTERNAR
+  const toggleMostrarPassword = () => {
+    setMostrarPassword(!mostrarPassword);
   };
 
   return (
@@ -318,7 +324,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Campo Contraseña */}
+            {/* Campo Contraseña CON OJO 👁️ */}
             <div className="mb-4">
               <label 
                 className="form-label fw-semibold"
@@ -357,7 +363,7 @@ export default function Login() {
                   <i className="bi bi-lock"></i>
                 </span>
                 <input
-                  type="password"
+                  type={mostrarPassword ? "text" : "password"}  // 👈 CAMBIO
                   className="form-control border-0"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -371,6 +377,33 @@ export default function Login() {
                     boxShadow: 'none'
                   }}
                 />
+                {/* 👈 NUEVO BOTÓN DEL OJO */}
+                <button
+                  type="button"
+                  onClick={toggleMostrarPassword}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '0 12px',
+                    color: mostrarPassword ? '#C6A15B' : '#5A6A7A',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#C6A15B';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = mostrarPassword ? '#C6A15B' : '#5A6A7A';
+                  }}
+                  aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  <i className={`bi bi-${mostrarPassword ? 'eye-slash' : 'eye'}`}></i>
+                </button>
               </div>
             </div>
 
